@@ -1,0 +1,95 @@
+# 无 LLM Key 时的本地兜底话术
+#
+# 这些文案同时出现在两个地方，改的时候要一起想：
+#   - 直接说给顾客听（手机端 / 大屏）
+#   - 作为 Citation.reason 显示在前端引用卡片上
+#
+# 只抽静态措辞与模板串。_local_answer() 里的循环和条件判断留在代码里——
+# 把控制流搬进 YAML 只会让两边都更难读。
+#
+# 占位符用 string.Template 语法（$name）。文案里若真要写 $ 需转义成 $$。
+
+version: "1.0"
+
+# 引用卡片上的标签（前端直接展示）
+#
+# 这些标签被 LLM 路径（run_tool）和本地兜底路径（_local_answer）共用，
+# 两边都从这儿取，避免「改了标签只改一处、两种模式显示不一致」。
+citation_reason:
+  promotion: 促销中
+  location: 货架位置
+  main: 主商品
+  nutrition: 营养成分
+  price: 价格
+  detail: 商品详情
+  search: 搜索结果
+  stock_out: 已售罄
+  stock_low: 库存紧张（剩$count件）
+  stock_ok: 库存充足
+  allergen_free: 不含$label
+
+# 促销咨询
+promotion:
+  header: 门店当前促销：
+  store_wide: · $desc
+  item: · $name ¥$price：$promo_text
+
+# 没匹配到任何商品
+not_found:
+  - 没找到这件商品，店里现在有这些品类：饮料、零食、日用。
+  - 你可以直接问我：可乐在哪、薯片的营养成分、有什么优惠。
+
+# 货架位置
+location: |-
+  「$name」在 $aisle 货架第 $level 层。
+  $desc。
+  售价 ¥$price（会员价 ¥$member_price）。
+
+# 过敏原筛选
+allergen:
+  header: 不含$label的商品共有 $count 款，推荐这几样：
+  item: · $name ¥$price｜$aisle 货架第 $level 层
+  disclaimer: 注意：过敏原信息来自商品包装标注，请以实物为准。
+
+# 库存查询。与 LLM 路径的 check_stock 工具共用同一套口径，
+# 避免「大模型说有货、本地模式说没货」这类自相矛盾。
+stock:
+  out: · $name（$spec）：已售罄
+  low: · $name（$spec）：仅剩 $count 件，建议尽快来
+  ok: · $name（$spec）：库存 $count 件，货源充足
+
+# 营养成分
+nutrition:
+  header: 「$name」每 100 克/毫升的营养成分（以商品包装标注为准）：
+  energy: · 能量 $value kJ
+  protein: · 蛋白质 $value g
+  fat: · 脂肪 $value g
+  carb: · 碳水化合物 $value g
+  sodium: · 钠 $value mg
+  ingredients: 配料：$value
+  allergens: 过敏原：$value
+  allergens_empty: 包装无标注
+
+# 搭配推荐
+pairing:
+  empty: 「$name」暂时没有搭配推荐。
+  header: 买「$name」的顾客常搭配：
+  item: · $name ¥$price：$reason
+
+# 价格咨询
+price: |-
+  「$name」$spec，售价 ¥$price，会员价 ¥$member_price$promo。
+  位置：$aisle 货架第 $level 层。
+
+# 商品详情（兜底分支）
+detail: |-
+  「$name」$spec，售价 ¥$price（会员价 ¥$member_price）$promo。
+  位置：$aisle 货架第 $level 层，$desc。
+  $stock｜标签：$tags
+
+# 详情分支里用到的零散取值
+misc:
+  tags_empty: 无
+  stock_count: 库存 $count 件
+  stock_out: 已售罄
+  promo_prefix: ，当前$desc

@@ -1,0 +1,8 @@
+# YOLO 训练依赖（与 backend 主依赖分离，避免污染运行时环境）
+# 建议单独建一个训练 venv，或直接装进 supermarketenv：
+#   D:/envs/supermarketenv/python.exe -m pip install -r training/requirements.txt
+
+ultralytics>=8.0.0
+
+# ultralytics 会自动拉取 torch / torchvision / opencv / numpy。
+# 若需 GPU 训练，先按 https://pytorch.org 装对应 CUDA 版 torch，再装 ultralytics。

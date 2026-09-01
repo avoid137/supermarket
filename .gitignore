@@ -1,0 +1,46 @@
+# ---- 密钥与环境变量（务必排除，凭证不得入库）----
+.env
+.env.*
+backend/.env
+!.env.example
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+# 项目实际使用的虚拟环境目录（命名是 envs，不是 .venv，必须显式忽略）
+backend/envs/
+
+# ---- Node ----
+node_modules/
+dist/
+.vite/
+
+# ---- 运行时数据（SQLite 库与备份，会话/订单属运行态数据）----
+backend/data/*.db
+backend/data/*.db.bak-*
+# 结账抓拍审计图是运行时生成的顾客照片，不入库
+backend/data/audit_photos/
+
+# ---- YOLO 训练数据与产物（图片/标注/权重体积大，不入库；class_map.json、data.yaml 等配置保留）----
+backend/training/datasets/
+backend/training/runs/
+*.pt
+*.onnx
+
+# ---- 编辑器与系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- 日志与运行产物 ----
+*.log
+backend/uvi_stdout.log
+backend/uvi_stderr.log
+
+# ---- 工作区私有数据（含个人偏好/记忆，勿入库）----
+.workbuddy/

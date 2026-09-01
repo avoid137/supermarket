@@ -1,0 +1,31 @@
+# 兜底 SQL 工具的表结构说明
+#
+# 这段文本会被注入两处：
+#   1. guide.yaml 里 query_product_database 工具的 description（$schema_hint 占位符）
+#   2. 模型实际写 SQL 时的上下文
+# 改字段名时记得同步 app/db/models.py 与 app/services/text2sql.py 的字段白名单。
+
+version: "1.0"
+
+schema_hint: |-
+  可用表（只允许 SELECT）：
+
+  products —— 商品主表
+    sku_id, name, brand, category, spec, price, member_price,
+    shelf_aisle, shelf_level（货架编号与层号）, shelf_desc,
+    energy_kj, protein_g, fat_g, carb_g, sodium_mg（每 100 克/毫升）,
+    ingredients, allergens, tags（这两个是 JSON 数组文本，用 LIKE 匹配即可）,
+    visual_color, visual_shape（can罐/bottle瓶/box盒/bag袋/tube管/pack条/cup杯）,
+    visual_label, visual_weight_g（单件重量，克）, stock
+
+  promotions —— 促销规则
+    scope（store 全场 / sku 单品）, sku_id, type, desc, bundle_price, threshold_amount, discount
+
+  similar_groups —— 相似商品分组
+    group_key, sku_id
+
+  orders / order_items —— 历史订单与订单明细
+    orders: order_id, session_id, payable, status, pay_method, created_at, paid_at
+    order_items: order_id, sku_id, name, unit_price, quantity, subtotal, discount, source
+
+  注意：allergens、tags、promotions.groups 存的是 JSON 文本，用 LIKE '%花生%' 这类方式匹配。

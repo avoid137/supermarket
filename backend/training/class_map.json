@@ -1,0 +1,478 @@
+{
+  "num_classes": 28,
+  "classes": [
+    {
+      "class_id": 0,
+      "sku_id": "SKU001",
+      "name": "可口可乐 汽水",
+      "spec": "330ml 罐装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 1,
+      "sku_id": "SKU002",
+      "name": "百事可乐 汽水",
+      "spec": "330ml 罐装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 2,
+      "sku_id": "SKU003",
+      "name": "元气森林 白桃味苏打气泡水",
+      "spec": "480ml 瓶装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 3,
+      "sku_id": "SKU004",
+      "name": "元气森林 葡萄味苏打气泡水",
+      "spec": "480ml 瓶装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 4,
+      "sku_id": "SKU005",
+      "name": "农夫山泉 饮用天然水",
+      "spec": "550ml 瓶装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 5,
+      "sku_id": "SKU006",
+      "name": "东方树叶 乌龙茶",
+      "spec": "500ml 瓶装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 6,
+      "sku_id": "SKU007",
+      "name": "特仑苏 纯牛奶",
+      "spec": "250ml 盒装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 7,
+      "sku_id": "SKU008",
+      "name": "三顿半 精品速溶咖啡",
+      "spec": "3g 小杯装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 8,
+      "sku_id": "SKU009",
+      "name": "乐事 黄瓜味薯片",
+      "spec": "70g 袋装",
+      "category": "零食"
+    },
+    {
+      "class_id": 9,
+      "sku_id": "SKU010",
+      "name": "乐事 原味薯片",
+      "spec": "70g 袋装",
+      "category": "零食"
+    },
+    {
+      "class_id": 10,
+      "sku_id": "SKU011",
+      "name": "奥利奥 夹心饼干 原味",
+      "spec": "116g 卷装",
+      "category": "零食"
+    },
+    {
+      "class_id": 11,
+      "sku_id": "SKU012",
+      "name": "好丽友 巧克力派",
+      "spec": "6 枚装",
+      "category": "零食"
+    },
+    {
+      "class_id": 12,
+      "sku_id": "SKU013",
+      "name": "三只松鼠 每日坚果",
+      "spec": "25g × 7 袋",
+      "category": "零食"
+    },
+    {
+      "class_id": 13,
+      "sku_id": "SKU014",
+      "name": "卫龙 亲嘴烧 麻辣味",
+      "spec": "108g 袋装",
+      "category": "零食"
+    },
+    {
+      "class_id": 14,
+      "sku_id": "SKU015",
+      "name": "士力架 花生夹心巧克力",
+      "spec": "51g 条装",
+      "category": "零食"
+    },
+    {
+      "class_id": 15,
+      "sku_id": "SKU016",
+      "name": "徐福记 鸡蛋味沙琪玛",
+      "spec": "400g 袋装",
+      "category": "零食"
+    },
+    {
+      "class_id": 16,
+      "sku_id": "SKU017",
+      "name": "炫迈 无糖口香糖 薄荷味",
+      "spec": "40 粒瓶装",
+      "category": "零食"
+    },
+    {
+      "class_id": 17,
+      "sku_id": "SKU018",
+      "name": "蒙牛 随变 香草味雪糕",
+      "spec": "65g 支装",
+      "category": "零食"
+    },
+    {
+      "class_id": 18,
+      "sku_id": "SKU019",
+      "name": "清风 原木纯品抽纸",
+      "spec": "3 层 120 抽 × 3 包",
+      "category": "日用"
+    },
+    {
+      "class_id": 19,
+      "sku_id": "SKU020",
+      "name": "云南白药 益优清爽型牙膏",
+      "spec": "120g 支装",
+      "category": "日用"
+    },
+    {
+      "class_id": 20,
+      "sku_id": "SKU021",
+      "name": "蓝月亮 深层洁净洗衣液",
+      "spec": "1kg 瓶装",
+      "category": "日用"
+    },
+    {
+      "class_id": 21,
+      "sku_id": "SKU022",
+      "name": "3M KN95 防尘口罩",
+      "spec": "5 只装",
+      "category": "日用"
+    },
+    {
+      "class_id": 22,
+      "sku_id": "SKU023",
+      "name": "滴露 衣物除菌液",
+      "spec": "1.5L 瓶装",
+      "category": "日用"
+    },
+    {
+      "class_id": 23,
+      "sku_id": "SKU024",
+      "name": "舒肤佳 纯白清香型香皂",
+      "spec": "115g 块装",
+      "category": "日用"
+    },
+    {
+      "class_id": 24,
+      "sku_id": "SKU025",
+      "name": "奥利奥 夹心饼干 原味",
+      "spec": "97g 盒装（内含两小包）",
+      "category": "零食"
+    },
+    {
+      "class_id": 25,
+      "sku_id": "SKU026",
+      "name": "农夫山泉 水溶C100 柠檬味复合果汁饮料",
+      "spec": "445ml 瓶装",
+      "category": "饮料"
+    },
+    {
+      "class_id": 26,
+      "sku_id": "SKU027",
+      "name": "乐事 原味薯片",
+      "spec": "40g 袋装",
+      "category": "零食"
+    },
+    {
+      "class_id": 27,
+      "sku_id": "SKU028",
+      "name": "崂山啤酒",
+      "spec": "500ml 瓶装",
+      "category": "饮料"
+    }
+  ],
+  "sku_to_class": {
+    "SKU001": 0,
+    "SKU002": 1,
+    "SKU003": 2,
+    "SKU004": 3,
+    "SKU005": 4,
+    "SKU006": 5,
+    "SKU007": 6,
+    "SKU008": 7,
+    "SKU009": 8,
+    "SKU010": 9,
+    "SKU011": 10,
+    "SKU012": 11,
+    "SKU013": 12,
+    "SKU014": 13,
+    "SKU015": 14,
+    "SKU016": 15,
+    "SKU017": 16,
+    "SKU018": 17,
+    "SKU019": 18,
+    "SKU020": 19,
+    "SKU021": 20,
+    "SKU022": 21,
+    "SKU023": 22,
+    "SKU024": 23,
+    "SKU025": 24,
+    "SKU026": 25,
+    "SKU027": 26,
+    "SKU028": 27
+  },
+  "class_to_sku": {
+    "0": "SKU001",
+    "1": "SKU002",
+    "2": "SKU003",
+    "3": "SKU004",
+    "4": "SKU005",
+    "5": "SKU006",
+    "6": "SKU007",
+    "7": "SKU008",
+    "8": "SKU009",
+    "9": "SKU010",
+    "10": "SKU011",
+    "11": "SKU012",
+    "12": "SKU013",
+    "13": "SKU014",
+    "14": "SKU015",
+    "15": "SKU016",
+    "16": "SKU017",
+    "17": "SKU018",
+    "18": "SKU019",
+    "19": "SKU020",
+    "20": "SKU021",
+    "21": "SKU022",
+    "22": "SKU023",
+    "23": "SKU024",
+    "24": "SKU025",
+    "25": "SKU026",
+    "26": "SKU027",
+    "27": "SKU028"
+  },
+  "class_info": {
+    "0": {
+      "class_id": 0,
+      "sku_id": "SKU001",
+      "name": "可口可乐 汽水",
+      "spec": "330ml 罐装",
+      "category": "饮料"
+    },
+    "1": {
+      "class_id": 1,
+      "sku_id": "SKU002",
+      "name": "百事可乐 汽水",
+      "spec": "330ml 罐装",
+      "category": "饮料"
+    },
+    "2": {
+      "class_id": 2,
+      "sku_id": "SKU003",
+      "name": "元气森林 白桃味苏打气泡水",
+      "spec": "480ml 瓶装",
+      "category": "饮料"
+    },
+    "3": {
+      "class_id": 3,
+      "sku_id": "SKU004",
+      "name": "元气森林 葡萄味苏打气泡水",
+      "spec": "480ml 瓶装",
+      "category": "饮料"
+    },
+    "4": {
+      "class_id": 4,
+      "sku_id": "SKU005",
+      "name": "农夫山泉 饮用天然水",
+      "spec": "550ml 瓶装",
+      "category": "饮料"
+    },
+    "5": {
+      "class_id": 5,
+      "sku_id": "SKU006",
+      "name": "东方树叶 乌龙茶",
+      "spec": "500ml 瓶装",
+      "category": "饮料"
+    },
+    "6": {
+      "class_id": 6,
+      "sku_id": "SKU007",
+      "name": "特仑苏 纯牛奶",
+      "spec": "250ml 盒装",
+      "category": "饮料"
+    },
+    "7": {
+      "class_id": 7,
+      "sku_id": "SKU008",
+      "name": "三顿半 精品速溶咖啡",
+      "spec": "3g 小杯装",
+      "category": "饮料"
+    },
+    "8": {
+      "class_id": 8,
+      "sku_id": "SKU009",
+      "name": "乐事 黄瓜味薯片",
+      "spec": "70g 袋装",
+      "category": "零食"
+    },
+    "9": {
+      "class_id": 9,
+      "sku_id": "SKU010",
+      "name": "乐事 原味薯片",
+      "spec": "70g 袋装",
+      "category": "零食"
+    },
+    "10": {
+      "class_id": 10,
+      "sku_id": "SKU011",
+      "name": "奥利奥 夹心饼干 原味",
+      "spec": "116g 卷装",
+      "category": "零食"
+    },
+    "11": {
+      "class_id": 11,
+      "sku_id": "SKU012",
+      "name": "好丽友 巧克力派",
+      "spec": "6 枚装",
+      "category": "零食"
+    },
+    "12": {
+      "class_id": 12,
+      "sku_id": "SKU013",
+      "name": "三只松鼠 每日坚果",
+      "spec": "25g × 7 袋",
+      "category": "零食"
+    },
+    "13": {
+      "class_id": 13,
+      "sku_id": "SKU014",
+      "name": "卫龙 亲嘴烧 麻辣味",
+      "spec": "108g 袋装",
+      "category": "零食"
+    },
+    "14": {
+      "class_id": 14,
+      "sku_id": "SKU015",
+      "name": "士力架 花生夹心巧克力",
+      "spec": "51g 条装",
+      "category": "零食"
+    },
+    "15": {
+      "class_id": 15,
+      "sku_id": "SKU016",
+      "name": "徐福记 鸡蛋味沙琪玛",
+      "spec": "400g 袋装",
+      "category": "零食"
+    },
+    "16": {
+      "class_id": 16,
+      "sku_id": "SKU017",
+      "name": "炫迈 无糖口香糖 薄荷味",
+      "spec": "40 粒瓶装",
+      "category": "零食"
+    },
+    "17": {
+      "class_id": 17,
+      "sku_id": "SKU018",
+      "name": "蒙牛 随变 香草味雪糕",
+      "spec": "65g 支装",
+      "category": "零食"
+    },
+    "18": {
+      "class_id": 18,
+      "sku_id": "SKU019",
+      "name": "清风 原木纯品抽纸",
+      "spec": "3 层 120 抽 × 3 包",
+      "category": "日用"
+    },
+    "19": {
+      "class_id": 19,
+      "sku_id": "SKU020",
+      "name": "云南白药 益优清爽型牙膏",
+      "spec": "120g 支装",
+      "category": "日用"
+    },
+    "20": {
+      "class_id": 20,
+      "sku_id": "SKU021",
+      "name": "蓝月亮 深层洁净洗衣液",
+      "spec": "1kg 瓶装",
+      "category": "日用"
+    },
+    "21": {
+      "class_id": 21,
+      "sku_id": "SKU022",
+      "name": "3M KN95 防尘口罩",
+      "spec": "5 只装",
+      "category": "日用"
+    },
+    "22": {
+      "class_id": 22,
+      "sku_id": "SKU023",
+      "name": "滴露 衣物除菌液",
+      "spec": "1.5L 瓶装",
+      "category": "日用"
+    },
+    "23": {
+      "class_id": 23,
+      "sku_id": "SKU024",
+      "name": "舒肤佳 纯白清香型香皂",
+      "spec": "115g 块装",
+      "category": "日用"
+    },
+    "24": {
+      "class_id": 24,
+      "sku_id": "SKU025",
+      "name": "奥利奥 夹心饼干 原味",
+      "spec": "97g 盒装（内含两小包）",
+      "category": "零食"
+    },
+    "25": {
+      "class_id": 25,
+      "sku_id": "SKU026",
+      "name": "农夫山泉 水溶C100 柠檬味复合果汁饮料",
+      "spec": "445ml 瓶装",
+      "category": "饮料"
+    },
+    "26": {
+      "class_id": 26,
+      "sku_id": "SKU027",
+      "name": "乐事 原味薯片",
+      "spec": "40g 袋装",
+      "category": "零食"
+    },
+    "27": {
+      "class_id": 27,
+      "sku_id": "SKU028",
+      "name": "崂山啤酒",
+      "spec": "500ml 瓶装",
+      "category": "饮料"
+    }
+  },
+  "similar_groups": [
+    [
+      2,
+      3
+    ],
+    [
+      8,
+      9,
+      26
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      10,
+      24
+    ]
+  ]
+}

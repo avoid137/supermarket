@@ -1,0 +1,36 @@
+# 由 scripts/make_catalog.py 自动生成，勿手改（改商品后重跑本脚本）
+# 路径相对 training/ 目录；train.py 运行时会把 path 解析成绝对路径
+path: datasets/detect
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: SKU001
+  1: SKU002
+  2: SKU003
+  3: SKU004
+  4: SKU005
+  5: SKU006
+  6: SKU007
+  7: SKU008
+  8: SKU009
+  9: SKU010
+  10: SKU011
+  11: SKU012
+  12: SKU013
+  13: SKU014
+  14: SKU015
+  15: SKU016
+  16: SKU017
+  17: SKU018
+  18: SKU019
+  19: SKU020
+  20: SKU021
+  21: SKU022
+  22: SKU023
+  23: SKU024
+  24: SKU025
+  25: SKU026
+  26: SKU027
+  27: SKU028
