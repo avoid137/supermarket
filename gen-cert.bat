@@ -1,16 +1,16 @@
 @echo off
 REM ==========================================================
-REM  æ™ºé€‰æ— äººè¶…å¸‚ Â· ä¸€é”®é‡ç­¾ HTTPS è‡ªç­¾è¯ä¹¦
-REM  æ¢ IP / é¦–æ¬¡éƒ¨ç½²åè¿è¡Œä¸€æ¬¡:
-REM     åŒå‡»æœ¬æ–‡ä»¶ (æˆ– gen-cert.bat 192.168.x.x æ‰‹åŠ¨æŒ‡å®š)
-REM  ä½œç”¨: ç”¨å½“å‰å±€åŸŸç½‘ IP é‡æ–°ç”Ÿæˆ frontend\certs\ ä¸‹è¯ä¹¦,
-REM        ç„¶åé‡å¯å‰ç«¯(vite), æ‰‹æœºè®¿é—® https://IP:5173/guide
+REM  ÖÇÑ¡ÎŞÈË³¬ÊĞ ¡¤ Ò»¼üÖØÇ© HTTPS ×ÔÇ©Ö¤Êé
+REM  »» IP / Ê×´Î²¿ÊğºóÔËĞĞÒ»´Î:
+REM     Ë«»÷±¾ÎÄ¼ş (»ò gen-cert.bat 192.168.x.x ÊÖ¶¯Ö¸¶¨)
+REM  ×÷ÓÃ: ÓÃµ±Ç°¾ÖÓòÍø IP ÖØĞÂÉú³É frontend\certs\ ÏÂÖ¤Êé,
+REM        È»ºóÖØÆôÇ°¶Ë(vite), ÊÖ»ú·ÃÎÊ https://IP:5173/guide
 REM ==========================================================
 setlocal enabledelayedexpansion
 
 where openssl >nul 2>&1
 if errorlevel 1 (
-  echo [é”™è¯¯] æœªæ‰¾åˆ° opensslã€‚è¯·å®‰è£… Git for Windows æˆ– Anaconda åé‡è¯•ã€‚
+  echo [´íÎó] Î´ÕÒµ½ openssl¡£Çë°²×° Git for Windows »ò Anaconda ºóÖØÊÔ¡£
   pause
   exit /b 1
 )
@@ -30,23 +30,23 @@ if not "%~1"=="" (
 )
 
 if "%CERT_IP%"=="" (
-  echo [æç¤º] æœªè‡ªåŠ¨æ£€æµ‹åˆ°å±€åŸŸç½‘ IP, è¯·æ‰‹åŠ¨æŒ‡å®š: gen-cert.bat ^<IP^>
-  echo        ä¾‹å¦‚: gen-cert.bat 192.168.0.103
+  echo [ÌáÊ¾] Î´×Ô¶¯¼ì²âµ½¾ÖÓòÍø IP, ÇëÊÖ¶¯Ö¸¶¨: gen-cert.bat ^<IP^>
+  echo        ÀıÈç: gen-cert.bat 192.168.0.103
   pause
   exit /b 1
 )
 
-echo [1/2] ç”Ÿæˆè¯ä¹¦, è¦†ç›– IP: %CERT_IP%
+echo [1/2] Éú³ÉÖ¤Êé, ¸²¸Ç IP: %CERT_IP%
 openssl req -x509 -newkey rsa:2048 -keyout frontend\certs\key.pem -out frontend\certs\cert.pem -days 825 -nodes -subj "/CN=smartmart-demo" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:%CERT_IP%"
 if errorlevel 1 (
-  echo [é”™è¯¯] è¯ä¹¦ç”Ÿæˆå¤±è´¥ã€‚
+  echo [´íÎó] Ö¤ÊéÉú³ÉÊ§°Ü¡£
   pause
   exit /b 1
 )
 
 echo.
-echo [2/2] å®Œæˆ
-echo   æ‰‹æœºè®¿é—®: https://%CERT_IP%:5173/guide
-echo   é¦–æ¬¡è®¿é—®ä¼šæç¤ºè¯ä¹¦ä¸å—ä¿¡ä»», ç‚¹ã€Œé«˜çº§ -^> ç»§ç»­è®¿é—®ã€å³å¯ä½¿ç”¨æ‰«ç ã€‚
-echo   æ”¹å®Œè¯ä¹¦åéœ€é‡å¯å‰ç«¯(vite)ç”Ÿæ•ˆã€‚
+echo [2/2] Íê³É
+echo   ÊÖ»ú·ÃÎÊ: https://%CERT_IP%:5173/guide
+echo   Ê×´Î·ÃÎÊ»áÌáÊ¾Ö¤Êé²»ÊÜĞÅÈÎ, µã¡¸¸ß¼¶ -^> ¼ÌĞø·ÃÎÊ¡¹¼´¿ÉÊ¹ÓÃÉ¨Âë¡£
+echo   ¸ÄÍêÖ¤ÊéºóĞèÖØÆôÇ°¶Ë(vite)ÉúĞ§¡£
 pause

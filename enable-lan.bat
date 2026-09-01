@@ -1,28 +1,28 @@
 @echo off
 REM ==========================================================
-REM  æ™ºé€‰æ— äººè¶…å¸‚ Â· ä¸€é”®å¼€æ”¾æ‰‹æœºè®¿é—®
-REM  å³é”® -> ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œ
-REM  ä½œç”¨: æ”¾è¡Œ 5173 (å‰ç«¯) / 8000 (åç«¯) ä¸¤ç«¯å£å…¥ç«™ï¼Œ
-REM       å¹¶å‘Šè¯‰ä½ æ‰‹æœºåº”è¯¥è¿å“ªä¸ª IPã€‚
+REM  ÖÇÑ¡ÎŞÈË³¬ÊĞ ¡¤ Ò»¼ü¿ª·ÅÊÖ»ú·ÃÎÊ
+REM  ÓÒ¼ü -> ÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ
+REM  ×÷ÓÃ: ·ÅĞĞ 5173 (Ç°¶Ë) / 8000 (ºó¶Ë) Á½¶Ë¿ÚÈëÕ¾£¬
+REM       ²¢¸æËßÄãÊÖ»úÓ¦¸ÃÁ¬ÄÄ¸ö IP¡£
 REM ==========================================================
 setlocal
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-  echo [é”™è¯¯] è¯·å³é”®æœ¬æ–‡ä»¶ï¼Œé€‰æ‹© "ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œ"ã€‚
+  echo [´íÎó] ÇëÓÒ¼ü±¾ÎÄ¼ş£¬Ñ¡Ôñ "ÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ"¡£
   pause
   exit /b
 )
 
-echo [1/3] æ·»åŠ  Windows é˜²ç«å¢™å…¥ç«™è§„åˆ™...
+echo [1/3] Ìí¼Ó Windows ·À»ğÇ½ÈëÕ¾¹æÔò...
 netsh advfirewall firewall add rule name="Smartmart Frontend 5173" dir=in action=allow protocol=TCP localport=5173 >nul
 netsh advfirewall firewall add rule name="Smartmart Backend 8000"  dir=in action=allow protocol=TCP localport=8000  >nul
 
-echo [2/3] å½“å‰æ´»åŠ¨å…¥ç«™è§„åˆ™:
+echo [2/3] µ±Ç°»î¶¯ÈëÕ¾¹æÔò:
 netsh advfirewall firewall show rule name="Smartmart Frontend 5173" | findstr "Rule Name: Enabled LocalPort: Action Profile"
 netsh advfirewall firewall show rule name="Smartmart Backend 8000"  | findstr "Rule Name: Enabled LocalPort: Action Profile"
 echo.
 
-echo [3/3] å½“å‰ç”µè„‘èƒ½ç”¨çš„ IP (æ’é™¤è™šæ‹Ÿç½‘å¡):
+echo [3/3] µ±Ç°µçÄÔÄÜÓÃµÄ IP (ÅÅ³ıĞéÄâÍø¿¨):
 echo --------------------------------------------------------
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R /C:"IPv4"') do (
   for /f "tokens=1 delims= " %%i in ("%%a") do (
@@ -35,19 +35,19 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /R /C:"IPv4"') do (
 echo --------------------------------------------------------
 echo.
 echo ==========================================================
-echo  æ‰‹æœºç«¯å¿…é¡»ç”¨ è·Ÿç”µè„‘åŒä¸€ä¸ª Wi-Fi (ä¾‹å¦‚ 192.168.x æˆ– 10.x)
-echo  æ³¨æ„: 192.168.132.1 / 192.168.86.1 æ˜¯ VMware è™šæ‹Ÿç½‘å¡ï¼Œ
-echo        æ‰‹æœºä¸€å®šè¿ä¸ä¸Šã€‚ä¸‹åˆ—å« "10." "192.168." çš„æ‰æ˜¯çœŸç½‘å¡ã€‚
+echo  ÊÖ»ú¶Ë±ØĞëÓÃ ¸úµçÄÔÍ¬Ò»¸ö Wi-Fi (ÀıÈç 192.168.x »ò 10.x)
+echo  ×¢Òâ: 192.168.132.1 / 192.168.86.1 ÊÇ VMware ĞéÄâÍø¿¨£¬
+echo        ÊÖ»úÒ»¶¨Á¬²»ÉÏ¡£ÏÂÁĞº¬ "10." "192.168." µÄ²ÅÊÇÕæÍø¿¨¡£
 echo ==========================================================
 echo.
-echo ä¸‹ä¸€æ­¥:
-echo   A. æ‰‹æœºè¿åŒ Wi-Fi, æµè§ˆå™¨è¾“ https://ä¸Šé¢çš„ IP:5173/guide
-echo      æ³¨æ„æ˜¯ https ä¸æ˜¯ http! (https æ‰å…è®¸æ‰‹æœºè°ƒæ‘„åƒå¤´æ‰«ç )
-echo      é¦–æ¬¡è®¿é—®ä¼šæç¤ºã€Œè¯ä¹¦ä¸å—ä¿¡ä»»ã€, ç‚¹ é«˜çº§ -^> ç»§ç»­è®¿é—® å³å¯ã€‚
-echo      è‹¥æ¢äº† IP æ‰“ä¸å¼€, åŒå‡» gen-cert.bat é‡æ–°ç”Ÿæˆè¯ä¹¦ã€‚
-echo   B. è‹¥ A ä¸é€š (å…¬å¸/æ ¡å›­ç½‘éš”ç¦»)ï¼Œç”¨ USB æ•°æ®çº¿èµ°:
-echo      1) æ‰‹æœºå¼€ USB è°ƒè¯•, ç”¨æ•°æ®çº¿è¿ç”µè„‘
-echo      2) åŒå‡» run-usb-bridge.bat (éœ€è¦ adb), æ‰‹æœºè®¿é—® http://localhost:5173/guide
+echo ÏÂÒ»²½:
+echo   A. ÊÖ»úÁ¬Í¬ Wi-Fi, ä¯ÀÀÆ÷Êä https://ÉÏÃæµÄ IP:5173/guide
+echo      ×¢ÒâÊÇ https ²»ÊÇ http! (https ²ÅÔÊĞíÊÖ»úµ÷ÉãÏñÍ·É¨Âë)
+echo      Ê×´Î·ÃÎÊ»áÌáÊ¾¡¸Ö¤Êé²»ÊÜĞÅÈÎ¡¹, µã ¸ß¼¶ -^> ¼ÌĞø·ÃÎÊ ¼´¿É¡£
+echo      Èô»»ÁË IP ´ò²»¿ª, Ë«»÷ gen-cert.bat ÖØĞÂÉú³ÉÖ¤Êé¡£
+echo   B. Èô A ²»Í¨ (¹«Ë¾/Ğ£Ô°Íø¸ôÀë)£¬ÓÃ USB Êı¾İÏß×ß:
+echo      1) ÊÖ»ú¿ª USB µ÷ÊÔ, ÓÃÊı¾İÏßÁ¬µçÄÔ
+echo      2) Ë«»÷ run-usb-bridge.bat (ĞèÒª adb), ÊÖ»ú·ÃÎÊ http://localhost:5173/guide
 echo ==========================================================
 echo.
 pause
