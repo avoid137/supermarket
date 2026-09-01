@@ -1,4 +1,7 @@
+import qrcode
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import Response
+from qrcode.image.svg import SvgPathImage
 
 from app.models.schemas import Product
 from app.repositories import product_repo
@@ -33,6 +36,24 @@ async def get_product(sku_id: str) -> Product:
     if product is None:
         raise HTTPException(status_code=404, detail=f"商品不存在: {sku_id}")
     return product
+
+
+@router.get("/catalog/products/{sku_id}/qrcode")
+async def get_product_qrcode(sku_id: str) -> Response:
+    """返回商品「扫码直达」二维码（SVG）。
+
+    内容为自有协议 `SMARTMART:SKUxxx`：手机导购端扫到后直接解析 SKU 跳转，
+    不依赖条码数据（条码只覆盖部分 SKU）。可打印成货架标签/贴在商品页。
+    """
+    if product_repo.get_product(sku_id) is None:
+        raise HTTPException(status_code=404, detail=f"商品不存在: {sku_id}")
+
+    qr = qrcode.QRCode(box_size=10, border=2)
+    qr.add_data(f"SMARTMART:{sku_id}")
+    qr.make(fit=True)
+    img = qr.make_image(image_factory=SvgPathImage)
+    # SvgPathImage.to_string() 返回 bytes（qrcode 8.x 与 StringIO 不兼容）
+    return Response(content=img.to_string(), media_type="image/svg+xml")
 
 
 @router.get("/catalog/products/{sku_id}/recommendations")

@@ -150,6 +150,11 @@ function openDetail(skuId: string) {
   if (product) detail.value = product
 }
 
+/** 商品「扫码直达」二维码（后端生成 SVG，内容 SMARTMART:SKUxxx） */
+function qrUrl(skuId: string) {
+  return `/api/v1/catalog/products/${encodeURIComponent(skuId)}/qrcode`
+}
+
 /* ===== 扫码：原生 BarcodeDetector + 手动输入 SKU 兜底 =====
    - Chrome / Edge / Android WebView：支持 BarcodeDetector，调用摄像头实时识别
    - Safari / 微信内置 / 旧版浏览器：降级为「手动输入 SKU」对话框
@@ -207,14 +212,22 @@ function tickScan() {
   }, 350)
 }
 
-async function onBarcodeHit(barcode: string) {
+async function onBarcodeHit(raw: string) {
   cleanupScan()
   scanning.value = false
   try {
-    const product = await api.lookupByBarcode(barcode)
+    // 自有协议 SMARTMART:SKUxxx → 直接解析 SKU（本店二维码，不依赖条码库）
+    const m = /^SMARTMART:(SKU\d+)$/i.exec(raw.trim())
+    if (m) {
+      const product = await api.getProduct(m[1])
+      await openScannedProduct(product)
+      return
+    }
+    // 普通商品条码（EAN-13 等）→ 查条码库
+    const product = await api.lookupByBarcode(raw.trim())
     await openScannedProduct(product)
   } catch (e) {
-    scanError.value = `未找到条码 ${barcode}：${(e as Error).message}`
+    scanError.value = `未找到 ${raw}：${(e as Error).message}`
     manualSku.value = ''
     scanning.value = false
   }
@@ -474,6 +487,16 @@ onBeforeUnmount(() => {
                   <span v-if="!detail.promotions.length" class="tag">暂无单品促销</span>
                   <span v-for="p in detail.promotions" :key="p.desc" class="tag warn">{{ p.desc }}</span>
                 </div>
+
+                <h4>扫码直达</h4>
+                <div class="qr-row">
+                  <img class="qr-img" :src="qrUrl(detail.sku_id)" alt="本商品二维码" />
+                  <div class="qr-tip">
+                    <p class="dim small">用导购页「扫一扫」对准此码，直达本商品详情与搭配推荐。</p>
+                    <p class="dim small footnote">可打印成货架标签 / 贴在商品区。</p>
+                  </div>
+                </div>
+
                 <p class="dim footnote">营养与过敏原数据来自商品包装标注，请以实物为准。</p>
               </div>
             </div>
@@ -880,6 +903,18 @@ onBeforeUnmount(() => {
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .small { font-size: 12px; }
 .footnote { font-size: 11px; margin-top: 14px; }
+
+/* 扫码直达二维码 */
+.qr-row { display: flex; align-items: center; gap: 12px; }
+.qr-img {
+  width: 96px;
+  height: 96px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+.qr-tip { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.2s ease; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
