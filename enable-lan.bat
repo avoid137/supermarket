@@ -41,10 +41,13 @@ echo        手机一定连不上。下列含 "10." "192.168." 的才是真网�
 echo ==========================================================
 echo.
 echo 下一步:
-echo   A. 手机连同 Wi-Fi, 浏览器输 http://上面的 IP:5173/guide
+echo   A. 手机连同 Wi-Fi, 浏览器输 https://上面的 IP:5173/guide
+echo      注意是 https 不是 http! (https 才允许手机调摄像头扫码)
+echo      首次访问会提示「证书不受信任」, 点 高级 -^> 继续访问 即可。
+echo      若换了 IP 打不开, 双击 gen-cert.bat 重新生成证书。
 echo   B. 若 A 不通 (公司/校园网隔离)，用 USB 数据线走:
 echo      1) 手机开 USB 调试, 用数据线连电脑
-echo      2) 双击 run-usb-bridge.bat (需要 adb)
+echo      2) 双击 run-usb-bridge.bat (需要 adb), 手机访问 http://localhost:5173/guide
 echo ==========================================================
 echo.
 pause

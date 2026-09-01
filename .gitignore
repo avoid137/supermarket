@@ -37,6 +37,9 @@ backend/training/runs/
 .DS_Store
 Thumbs.db
 
+# ---- HTTPS 自签证书（生成物，重签用 gen-cert.bat）----
+frontend/certs/
+
 # ---- 日志与运行产物 ----
 *.log
 backend/uvi_stdout.log
