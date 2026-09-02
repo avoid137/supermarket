@@ -47,3 +47,7 @@ backend/uvi_stderr.log
 
 # ---- 工作区私有数据（含个人偏好/记忆，勿入库）----
 .workbuddy/
+
+# ---- 根目录历史后端副本（含 .env，勿入库）----
+/data/
+/data.zip

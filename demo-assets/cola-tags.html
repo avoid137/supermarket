@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>智选无人超市 · 可乐演示标签</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background:#f2f2f7; display:flex; gap:28px;
+         justify-content:center; align-items:center; min-height:100vh; margin:0; padding:24px; flex-wrap:wrap; }
+  .tag { width:300px; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.18);
+         background:#fff; text-align:center; padding-bottom:18px; }
+  .brand { background:var(--c); color:#fff; font-size:26px; font-weight:900; padding:14px 0; letter-spacing:2px; }
+  .name { font-size:20px; font-weight:700; margin:14px 0 2px; }
+  .spec { color:#888; font-size:13px; margin-bottom:10px; }
+  .qr { width:190px; height:190px; display:block; margin:0 auto 10px; border:1px solid #eee; border-radius:10px; }
+  .price { font-size:26px; font-weight:900; color:var(--c); }
+  .price .member { font-size:13px; color:#e74c3c; font-weight:600; margin-left:8px; }
+  .promo { display:inline-block; margin:8px 0 4px; background:#fff3e0; color:#e65100; font-size:12px;
+           padding:3px 10px; border-radius:999px; }
+  .hint { color:#999; font-size:11px; }
+</style>
+</head>
+<body>
+
+    <div class="tag" style="--c:#C8102E;--c2:#FFFFFF">
+      <div class="brand">可口可乐</div>
+      <div class="name">可口可乐 汽水</div>
+      <div class="spec">330ml 罐装</div>
+      <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAG8AQAAAACNyy1yAAAC0UlEQVR4nO2cUbLqIAyGE8b3dgdn/8u6OygryB2SQKnW2B4Pnqv3/8YHRDLVn0waUpCFvkVO37MjgmEAxAmAOAEQJwDiBECcAIgTAHECIM5Acbgx69uZKK/t8toOwHSEwFdHijOJ0T7gL6HM5bU/ANMRAHHGisMtZlYXleqZsmwH/NAVT5LOGlRg+BniXHZ7hYgzSy6uKW//GxMMP1mczCJS0gALsy+44mNg+J+Lc2mtFj9ZX5Rnsc5JeFpuAuwb/cYEw48SJ/sqv7QnKf75JV4BmG8G/O5XPU06b2LA8F+Mq9J1SWbpO/XtTdaKeQyAOCPrq7Mv/0sgtWqVIn9K4ropXjmYjgCIM0Ic8rKpVqWsUdqaBnjDilddQ4dhOgIgzsi11VQWUOwNdcvst/5Sv6o5QGtgOkLgqwPjKmnBv38yJRpp+wDrwzwOYzoCIM5YX6XeG6vf+qcWaWt6AF99BHx1cFyVlovWGLt0nVcgrkbAV0eurWQtSm3u9aJBVeOqg7j6GPjqYF+dPDX1ez1Vp+17Wm6AuBoBXx28dyWzZG4hVPLcL/9Lv25lefqKCYb3gTiH6qu+buprqnvrL+QAB0hHBu0Bw4irlf66yFquy1kecpGvPgYuN3Y/gBBxd6Nn22qlb60f+6wOk44P3QLDQ3G1TwPWTGDZjm71K6ytIuByY+sAuwUBsoKVPSboHmDBV0PgqwNzAG4d0yI7T//Jtlt3uwcxHQEQZ+jelaU/FLA5aZX1nKAPwznWI6RDo3aA4blzrHbSSkTsFIDtX/UTAfVPA6BqCFzuRedY2TYE5rXyL14T8PMCz10xwfA+EOecr5YnVraLtTQ0N7DKlRavamYLVQMgzovOsZI6pNQF17rCmpbypwHPXjHB8D4Q54CvdsepLAegih27rv0tMYCqARBnhDiM/wq+D1wuAOIEQJwAiBMAcQIgTgDECYA4AW8kzl/kOveQEB0ttwAAAABJRU5ErkJggg==" alt="QR"/>
+      <div class="price">¥3.5<span class="member">会员 ¥3.2</span></div>
+      <div class="promo">🔥 第二件半价</div>
+      <div class="hint">手机相机扫码 · 直达智能导购</div>
+    </div>
+    <div class="tag" style="--c:#004B93;--c2:#E4002B">
+      <div class="brand">百事</div>
+      <div class="name">百事可乐 汽水</div>
+      <div class="spec">330ml 罐装</div>
+      <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAG8AQAAAACNyy1yAAAC8klEQVR4nO2bW24kIQxFDco/vYPe/7KyA1iBR35A0S8PlQnJTOYeRSWawurOLYuyDSSmD9Hyx+yIYBgAcQIgTgDECYA4ARAnAOIEQJwAiLNRnDS4ULr4vZQStd45DfiUbzxP/oCNAsOfJU5hg4j4vXts4XRlKnw34Jt/6mnyeRMDhn+VOG+jlcQhqzW4JW4yqdr1bsA3/dQMw/9bnLfHLm4XdUsW/yxM7cL/9v+YYfhTfZXspU86wX7+N2YYvgbiLPnqcMtU6u3r3rn1W6gaAHF2itM8y/ePPZ+SJOsq1/sBeBwR8NWNMQBPXZ5V0ZRhPQkG8DgCIM7O+urFy6oycxatUzUvpXLVW1oNmKqveBwBEGdnbtVk8vQiQKneJkmvtBSgjlqqTLN/+o0Zhq+BOCfqq+6LU51KPLaw9DeZcruzQtUAiLNDHDpWozSfkg9VV6mqtEeSNXqciscRAHE2+qownFPd0pBOa481VmvAVyPgqxvj1WTVVH3185T4p7505QFt6/ta8Dgi4KvbYwAeW1P60pXvZpmmVsyrC+SVQc+AYYS/2id3HcEAW+A6BkxtxAAhcLmd8WrV0LQ75JFSkU6qvYF5dY28OO4BGJ7YuyIV1F5HZe2RgpUGqx64OlA1AOLszK3I/46tgKSpljqnZ1Wor66Sl0feAcOl/QBW5LcigC1UcWGbVGn48LExAKoGQJy9dQC2VQDL/W/XBXzovByA+moEfHXzWkDHlwMUH9TLWcit1siL4x6A4blzrFL2r7ph1RIpe/vrUcFHw/NkGL4G4izUAfopAItI5WhA6em/9h9BrBtA1QCIszNeLTd7VEZZlcd+gD4Y61YL5JVBz4DhaXGGfyZ99Q+/nW5B1QCI80XipOsUlxY9IHCdrjgX8Hvgq3vPXPNotCSVVVK0/i+NUqXQeqRXeBwBEGfzPivDDlv11f9xtVuIV9fIi+MegGGAH7M6TYOqARAnAOIEQJwAiBMAcQIgTgDECYA4AV8vzi9z89uwD1KRCAAAAABJRU5ErkJggg==" alt="QR"/>
+      <div class="price">¥3.5<span class="member">会员 ¥3.2</span></div>
+      <div class="promo">🔥 第二件半价</div>
+      <div class="hint">手机相机扫码 · 直达智能导购</div>
+    </div>
+</body>
+</html>

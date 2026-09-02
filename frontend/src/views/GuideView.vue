@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import ProductVisual from '@/components/ProductVisual.vue'
 import { api, askAgent } from '@/api'
 import type { Citation, Product } from '@/types'
+import jsQR from 'jsqr'
 
 interface ChatMessage {
   id: number
@@ -54,6 +55,7 @@ const videoEl = ref<HTMLVideoElement | null>(null)
 let detector: any = null
 let stream: MediaStream | null = null
 let scanTimer: number | null = null
+let jsqrCanvas: HTMLCanvasElement | null = null
 
 let seq = 0
 let recognizer: any = null
@@ -194,36 +196,83 @@ async function openScanner() {
 }
 
 function tickScan() {
-  if (!scanning.value || !videoEl.value || !detector) return
+  if (!scanning.value || !videoEl.value) return
   scanTimer = window.setTimeout(async () => {
+    // 1) 系统识别器（BarcodeDetector，可能依赖 Google Play Services）
     try {
-      const codes = await detector.detect(videoEl.value!)
-      if (codes && codes.length > 0) {
-        const raw = codes[0].rawValue || ''
+      if (detector) {
+        const codes = await detector.detect(videoEl.value!)
+        const raw = codes?.[0]?.rawValue || ''
         if (raw) {
           await onBarcodeHit(raw)
           return
         }
       }
     } catch {
-      /* 单帧失败忽略，下一帧重试 */
+      /* 系统识别器异常 → 直接走 jsQR 兜底 */
+    }
+    // 2) jsQR 纯 JS 解码（独立 try，保证兜底必执行）
+    try {
+      const raw = decodeFrameWithJsQR(videoEl.value)
+      if (raw) {
+        await onBarcodeHit(raw)
+        return
+      }
+    } catch {
+      /* 忽略，下一帧重试 */
     }
     tickScan()
-  }, 350)
+  }, 300)
+}
+
+/** jsQR 兜底：把视频帧缩小绘制到 canvas 后解码 */
+function decodeFrameWithJsQR(video: HTMLVideoElement): string | null {
+  if (!video.videoWidth || !video.videoHeight) return null
+  if (!jsqrCanvas) jsqrCanvas = document.createElement('canvas')
+  const maxW = 640
+  const scale = Math.min(1, maxW / video.videoWidth)
+  const w = Math.round(video.videoWidth * scale)
+  const h = Math.round(video.videoHeight * scale)
+  jsqrCanvas.width = w
+  jsqrCanvas.height = h
+  const ctx = jsqrCanvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) return null
+  ctx.drawImage(video, 0, 0, w, h)
+  const img = ctx.getImageData(0, 0, w, h)
+  try {
+    const res = jsQR(img.data, img.width, img.height)
+    return res?.data ?? null
+  } catch {
+    return null
+  }
 }
 
 async function onBarcodeHit(raw: string) {
   cleanupScan()
   scanning.value = false
   try {
-    // 自有协议 SMARTMART:SKUxxx → 直接解析 SKU（本店二维码，不依赖条码库）
+    // 1) 自有协议 SMARTMART:SKUxxx → 直接解析 SKU（本店二维码，不依赖条码库）
     const m = /^SMARTMART:(SKU\d+)$/i.exec(raw.trim())
     if (m) {
       const product = await api.getProduct(m[1])
       await openScannedProduct(product)
       return
     }
-    // 普通商品条码（EAN-13 等）→ 查条码库
+    // 2) 本店 URL 版二维码 https://<host>/guide?sku=SKUxxx（货架/演示标签用）
+    try {
+      const u = new URL(raw.trim())
+      if (/\/guide$/i.test(u.pathname) && /^https?:$/.test(u.protocol)) {
+        const sku = u.searchParams.get('sku')?.toUpperCase() ?? ''
+        if (/^SKU\d+$/.test(sku)) {
+          const product = await api.getProduct(sku)
+          await openScannedProduct(product)
+          return
+        }
+      }
+    } catch {
+      /* 不是合法 URL → 继续按条码处理 */
+    }
+    // 3) 普通商品条码（EAN-13 等）→ 查条码库
     const product = await api.lookupByBarcode(raw.trim())
     await openScannedProduct(product)
   } catch (e) {
@@ -516,7 +565,7 @@ onBeforeUnmount(() => {
                   <video ref="videoEl" class="scan-video" playsinline muted />
                   <div class="scan-overlay">
                     <div class="scan-reticle" />
-                    <p class="dim">把条码/二维码对准框内</p>
+                    <p class="dim">正在识别…请将二维码完整对准框内，保持 15~30cm</p>
                   </div>
                 </div>
                 <div v-else class="scan-manual">

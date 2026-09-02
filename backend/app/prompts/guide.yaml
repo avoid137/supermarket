@@ -35,14 +35,14 @@ no_more_tool_calls_note: |-
   - 直接用自然语言组织答案即可。
 
 # 工具定义。description 与参数描述都是提示词的一部分——模型靠它们决定
-# 调不调用、传什么参数。这里只存文案，JSON Schema 骨架留在 agent.py。
+# 调不调用、传什么参数。只存文案，JSON Schema 骨架留在 agent.py。
 tools:
   search_product:
     description: 按关键词搜索商品，返回名称、价格、规格、货架位置和标签
     param_desc:
       keyword: 商品关键词，如 可乐、薯片、元气森林
 
-  # 下面三个工具的 keyword 参数在原文里就没有 description，
+  # 下面三个工具的 keyword 参数在原文里没有 description，
   # 保持空串，不要「顺手补上」——抽离是搬运，不是改写。
   get_nutrition:
     description: 查询商品的营养成分、配料和过敏原，用于回答健康相关问题
