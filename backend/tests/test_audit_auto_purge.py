@@ -7,19 +7,21 @@ import sqlite3
 import time
 import sys
 import logging
+from pathlib import Path
 
 logging.basicConfig(level=logging.DEBUG, format='[%(name)s] %(message)s')
 
-sys.path.insert(0, r'D:\wb-workspace\supermarket\backend')
+# 用相对定位解析 backend/，避免写死本机绝对路径（换台机器就找不到）
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import get_settings
+from app.db.database import DEFAULT_DB_PATH, session_scope, get_session_factory
 from app.services import audit as audit_service
-from app.db.database import session_scope, get_session_factory
 
 
 def reset_table_with_expired():
     """清理 + 注入 3 条过期（expires_at=0）+ 注入 1 条正常（30 天后才到期）"""
-    con = sqlite3.connect(r'D:\wb-workspace\supermarket\backend\data\smartmart.db')
+    con = sqlite3.connect(str(DEFAULT_DB_PATH))
     con.execute('DELETE FROM audit_records')
     now = time.time()
     rows = [
@@ -41,7 +43,7 @@ def reset_table_with_expired():
 
 
 def audit_count() -> int:
-    con = sqlite3.connect(r'D:\wb-workspace\supermarket\backend\data\smartmart.db')
+    con = sqlite3.connect(str(DEFAULT_DB_PATH))
     n = con.execute('SELECT count(*) FROM audit_records').fetchone()[0]
     con.close()
     return n
@@ -63,7 +65,7 @@ async def main():
     print(f"[after startup purge] audit_count={n_after_startup} (expected 1 fresh)")
 
     # 在 tick 过期之前，给 fresh 行设置 expires_at=0，再等 interval 触发清理
-    con = sqlite3.connect(r'D:\wb-workspace\supermarket\backend\data\smartmart.db')
+    con = sqlite3.connect(str(DEFAULT_DB_PATH))
     con.execute('UPDATE audit_records SET expires_at = 0')
     con.commit()
     con.close()

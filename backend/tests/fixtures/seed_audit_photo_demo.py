@@ -1,9 +1,15 @@
 """临时构造一笔带真实照片的 audit 记录，仅用于 /photo 接口端到端验证。"""
 import sqlite3
+import sys
 import time
 import json
+from pathlib import Path
 
-con = sqlite3.connect(r'D:\wb-workspace\supermarket\backend\data\smartmart.db')
+# 按相对位置定位 backend/，避免写死本机绝对路径
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from app.db.database import DEFAULT_DB_PATH
+
+con = sqlite3.connect(str(DEFAULT_DB_PATH))
 cur = con.cursor()
 cur.execute(
     """INSERT OR REPLACE INTO audit_records (

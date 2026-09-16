@@ -1,6 +1,9 @@
 // 截图脚本：访问 /admin，等数据加载完成，截图保存
 import { chromium } from 'playwright'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 async function main() {
   const browser = await chromium.launch()
@@ -18,7 +21,10 @@ async function main() {
   )
   await page.waitForTimeout(500)  // 让 SVG 渲染
 
-  const out = path.resolve('D:/wb-workspace/supermarket/admin_screenshot.png')
+  // 输出到仓库根目录（可用命令行参数覆盖），不写死本机绝对路径
+  const out = process.argv[2]
+    ? path.resolve(process.argv[2])
+    : path.resolve(__dirname, '..', '..', 'admin_screenshot.png')
   await page.screenshot({ path: out, fullPage: true })
   console.log(`截图已保存：${out}`)
 

@@ -271,6 +271,27 @@ def _reassign_detection_sku(
     det.message = build_message("auto", det.candidates)
 
 
+def _spec_siblings(product: Product, products_by_sku: dict[str, Product]) -> list[Product]:
+    """返回库中与 product「同名但不同规格」的兄弟款（如乐事黄瓜味 70g ↔ 40g）。
+
+    这类商品靠外观无法区分规格，必须借助 OCR 净含量或尺子比例尺等第二信号，
+    否则不得自动入账。
+
+    注意与 SIMILAR_GROUPS（易混包装组，如可口可乐 / 百事可乐）区分：
+    后者是**不同商品**、只是包装相似，标签文字本身足以区分，
+    视觉置信度分差就是有效证据，不应强制转人工复核。
+    """
+    if product is None:
+        return []
+    return [
+        other
+        for other in products_by_sku.values()
+        if other.sku_id != product.sku_id
+        and other.name == product.name
+        and other.spec != product.spec
+    ]
+
+
 def _resolve_similar_group(
     top_sku: str,
     meas: float | None,
@@ -816,14 +837,20 @@ def build_detections(
         # 分差很大的候选没有追问价值，不该拉低自动入账的门槛。
         has_competitors = any(conf >= top_conf - COMPETITOR_GAP for conf, _ in ranked[1:])
 
-        # 相似组兜底：当商品属于「同款不同规格」组、且 OCR 净含量和尺子
-        # 两条信号都不可用时，视觉模型的规格判定不可信（VLM 分不清 40g/70g），
-        # 降为 review 避免自动入账错误规格。店员在复核界面能看到两个候选手动选择。
+        # 同名不同规格兄弟款兜底：当商品存在「同名但不同规格」的兄弟款、
+        # 且 OCR 净含量和尺子两条信号都不可用时，视觉模型的规格判定不可信
+        # （VLM 分不清 40g/70g），降为 review 避免自动入账错误规格。
+        # 店员在复核界面能看到两个候选手动选择。
+        #
+        # 判定依据是「同名不同规格」而非 SIMILAR_GROUPS 成员：易混包装组
+        # （可口 / 百事、元气森林白桃 / 葡萄）属于不同商品，标签本身足以区分，
+        # 视觉分差是有效证据；对它们强制复核只会徒增人工负担，
+        # 并让「压倒性优势」这种本该自动入账的场景无谓报警。
         #
         # 但若 OCR 已确认 top 自身的规格（如 ocr 含"70克"且 top 就是 70g），
         # 则信任 OCR 判定、不强制 review——此时规格已确定，只是尺子不可信而已。
         force_review = False
-        if top_product and any(top_product.sku_id in g for g in SIMILAR_GROUPS):
+        if top_product and _spec_siblings(top_product, products_by_sku):
             ocr_g = _extract_grams(ocr_text) if ocr_text else None
             top_visual_g = _extract_grams(top_product.spec)
             top_len = getattr(top_product.visual, "pkg_length_cm", 0.0) or 0.0
@@ -833,7 +860,7 @@ def build_detections(
             if not ocr_confirms_top and not ocr_suggests_switch and not meas_ok:
                 force_review = True
                 logger.info(
-                    "[DIAG] 相似组强制review: sku=%s 无OCR净含量且尺子不可信(meas=%s)",
+                    "[DIAG] 同名兄弟款强制review: sku=%s 无OCR净含量且尺子不可信(meas=%s)",
                     top_product.sku_id, meas,
                 )
                 evidence = f"疑似{top_product.name}（规格需人工确认，OCR未读到净含量）"
