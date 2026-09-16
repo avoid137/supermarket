@@ -18,7 +18,7 @@
 6. 整盘混放（可乐 + 两袋乐事）+ 总重 475g → 可乐不变、乐事 70+40
 7. 单袋 + 残差 60g（介于 45/75 且都超容差）→ 无法唯一确定，保持 review
 
-运行：D:/envs/supermarketenv/python.exe tests/test_weight_resolve.py
+运行（在 backend 目录下）：python tests/test_weight_resolve.py
 """
 import sys
 from pathlib import Path

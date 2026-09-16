@@ -193,8 +193,8 @@ onMounted(async () => {
     <!-- 顶部欢迎卡 + 一键进入能力 -->
     <section class="hero">
       <div class="hero-text">
-        <h2>智选无人超市</h2>
-        <p class="dim">线下 28 款精选商品 · 点商品卡片让 AI 帮你介绍和搭配</p>
+        <h2>智选</h2>
+        <p class="dim">线下 29 款精选商品 · 点商品卡片让 AI 帮你介绍和搭配</p>
       </div>
       <div class="hero-actions">
         <button class="hero-btn primary" @click="openGuide()">

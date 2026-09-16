@@ -167,7 +167,7 @@ supermarket/
 
 | 表 | 用途 | 演示库现有量 |
 | --- | --- | --- |
-| `products` | 商品主表：价格、营养、过敏原、标签、货架位、视觉特征、**条码 `barcode`**、**库存 `stock`** | 28 |
+| `products` | 商品主表：价格、营养、过敏原、标签、货架位、视觉特征、**条码 `barcode`**、**库存 `stock`** | 29 |
 | `promotions` | 促销规则，`scope=store` 全场 / `scope=sku` 单品 | 7 |
 | `similar_groups` | 相似商品分组，供视觉仲裁判定歧义 | 9 |
 | `checkout_sessions` | 结账会话（含确认记录与账单快照） | 运行态 |

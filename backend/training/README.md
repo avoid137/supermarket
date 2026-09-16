@@ -32,11 +32,11 @@ training/
 ## 快速开始
 
 ```bash
-# 0) 装依赖（当前项目 venv 是 D:\envs\supermarketenv）
-D:/envs/supermarketenv/python.exe -m pip install -r training/requirements.txt
+# 0) 装依赖（先激活本项目虚拟环境，下面的 python 均指该环境的解释器）
+python -m pip install -r training/requirements.txt
 
 # 1) 生成 class 映射（改过商品后也重跑这一步）
-D:/envs/supermarketenv/python.exe training/scripts/make_catalog.py
+python training/scripts/make_catalog.py
 ```
 
 ## 路线 A：分类（先验证「40g vs 70g 能否分开」，推荐先做）
@@ -45,13 +45,13 @@ D:/envs/supermarketenv/python.exe training/scripts/make_catalog.py
 2. 划分（分类任务不需要标注框）：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/scripts/split_dataset.py --task classify --train 0.8 --val 0.2
+python training/scripts/split_dataset.py --task classify --train 0.8 --val 0.2
 ```
 
 3. 训练，跑完看混淆矩阵里 `SKU027(40g) ↔ SKU010(70g)` 这一格：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/train.py --task classify --epochs 50
+python training/train.py --task classify --epochs 50
 ```
 
 ## 路线 B：检测（解决「占位框」，需要标框）
@@ -61,25 +61,25 @@ D:/envs/supermarketenv/python.exe training/train.py --task classify --epochs 50
 3. 转 YOLO 格式：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/scripts/convert_annotations.py --input training/datasets/raw
+python training/scripts/convert_annotations.py --input training/datasets/raw
 ```
 
 4. 划分（图片 + 标注成对搬运）：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/scripts/split_dataset.py --task detect --train 0.8 --val 0.1 --test 0.1
+python training/scripts/split_dataset.py --task detect --train 0.8 --val 0.1 --test 0.1
 ```
 
 5. 训练（微调：先冻结骨干 10 层训头，再解冻精调可提升小样本效果）：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/train.py --task detect --model yolov8n.pt --epochs 100 --freeze 10
+python training/train.py --task detect --model yolov8n.pt --epochs 100 --freeze 10
 ```
 
 6. 导出 ONNX：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/export.py --weights training/runs/detect/weights/best.pt
+python training/export.py --weights training/runs/detect/weights/best.pt
 ```
 
 ## YOLO 标注格式（一个示例）
@@ -108,7 +108,7 @@ D:/envs/supermarketenv/python.exe training/export.py --weights training/runs/det
 结账流程里「识别失败 + 人工确认」的样本是最有价值的训练数据。`scripts/collect_shots.py` 提供了复用函数 `save_hard_example(src, sku_id)`，供 checkout 流程调用；也可手动导入：
 
 ```bash
-D:/envs/supermarketenv/python.exe training/scripts/collect_shots.py import --src ./某目录 --sku SKU027 --hard
+python training/scripts/collect_shots.py import --src ./某目录 --sku SKU027 --hard
 ```
 
 ## 尚未接入的部分

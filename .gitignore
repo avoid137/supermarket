@@ -31,6 +31,9 @@ backend/training/runs/
 *.pt
 *.onnx
 
+# ---- 本机 Python 解释器位置（各人机器不同，不入库）----
+python-path.txt
+
 # ---- 编辑器与系统 ----
 .vscode/
 .idea/

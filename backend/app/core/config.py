@@ -15,7 +15,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    APP_NAME: str = "SmartMart 无人超市 API"
+    APP_NAME: str = "智选 · 无人零售导购 Agent 与多模态结账系统 API"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"

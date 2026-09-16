@@ -1,10 +1,31 @@
 @echo off
-REM å¯åŠ¨åç«¯ï¼šç»‘å®š 0.0.0.0 è®©å±€åŸŸç½‘æ‰‹æœºèƒ½è®¿é—®
-REM å¦‚ç«¯å£è¢«å ç”¨ï¼Œè¯·å…ˆ taskkill /F /PID <pid>
+REM Æô¶¯ºó¶Ë£º°ó¶¨ 0.0.0.0 ÈÃ¾ÖÓòÍøÊÖ»úÄÜ·ÃÎÊ
+REM Èç¶Ë¿Ú±»Õ¼ÓÃ£¬ÇëÏÈ taskkill /F /PID <pid>
+REM Python ¶¨Î»Ë³Ğò: python-path.txt ÓÅÏÈ£¬Æä´Î SMARTMART_PYTHON£¬
+REM                  ÔÙ backend Óë¸ùÄ¿Â¼ÏÂµÄ envs£¬×îºó PATH
 
 cd /d %~dp0
 
-echo [SmartMart] å¯åŠ¨åç«¯ (0.0.0.0:8000) ...
-D:\envs\supermarketenv\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+set "PYEXE="
+if exist "%~dp0..\python-path.txt" for /f "usebackq delims=" %%P in ("%~dp0..\python-path.txt") do if not defined PYEXE set "PYEXE=%%P"
+if defined PYEXE if not exist "%PYEXE%" set "PYEXE="
+if not defined PYEXE if defined SMARTMART_PYTHON if exist "%SMARTMART_PYTHON%" set "PYEXE=%SMARTMART_PYTHON%"
+if not defined PYEXE if exist "%~dp0envs\Scripts\python.exe" set "PYEXE=%~dp0envs\Scripts\python.exe"
+if not defined PYEXE if exist "%~dp0..\envs\Scripts\python.exe" set "PYEXE=%~dp0..\envs\Scripts\python.exe"
+if not defined PYEXE if exist "%~dp0.venv\Scripts\python.exe" set "PYEXE=%~dp0.venv\Scripts\python.exe"
+if not defined PYEXE for /f "delims=" %%P in ('where python 2^>nul') do if not defined PYEXE set "PYEXE=%%P"
+if not defined PYEXE (
+  echo [´íÎó] Î´ÕÒµ½ Python ½âÊÍÆ÷¡£
+  echo   1^) ÔÚ²Ö¿â¸ùÄ¿Â¼ĞÂ½¨ python-path.txt£¬Ğ´Èë python.exe µÄÍêÕûÂ·¾¶
+  echo   2^) »òÉèÖÃ»·¾³±äÁ¿ SMARTMART_PYTHON Ö¸Ïò python.exe
+  echo   3^) »òÔÚ backend\envs\Scripts\ ÏÂ´´½¨ĞéÄâ»·¾³
+  echo.
+  pause
+  exit /b 1
+)
+
+echo [SmartMart] Æô¶¯ºó¶Ë (0.0.0.0:8000) ...
+echo [SmartMart] Python: %PYEXE%
+"%PYEXE%" -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 pause

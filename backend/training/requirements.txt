@@ -1,6 +1,6 @@
 # YOLO 训练依赖（与 backend 主依赖分离，避免污染运行时环境）
-# 建议单独建一个训练 venv，或直接装进 supermarketenv：
-#   D:/envs/supermarketenv/python.exe -m pip install -r training/requirements.txt
+# 建议单独建一个训练 venv，或直接装进项目主虚拟环境：
+#   python -m pip install -r training/requirements.txt
 
 ultralytics>=8.0.0
 

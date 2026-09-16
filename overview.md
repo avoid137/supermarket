@@ -1,4 +1,4 @@
-# 智选无人超市 · 2026-09-01 上午工作汇总（含清单批量问询）
+# 智选 · 2026-09-01 上午工作汇总（含清单批量问询）
 
 ## 三件事一次性落地（手机端）
 
@@ -30,13 +30,13 @@
 |---|---|---|
 | 后端 uvicorn | 0.0.0.0:8000 | ✅ 200 |
 | 前端 Vite dev | 0.0.0.0:5173 | ✅ 200 |
-| 商品总数 | — | 28（饮料 10 + 零食 12 + 日用 6）|
+| 商品总数 | — | 29（饮料 10 + 零食 13 + 日用 6）|
 
 ## API 路由实测
 
 ```
 GET  /                              → 200 (HomeView SPA)
-GET  /api/v1/catalog/products       → 200 (28 items)
+GET  /api/v1/catalog/products       → 200 (29 items)
 GET  /guide                         → 200 (Vue Router)
 GET  /guide?sku=SKU001              → 200 (单件 deep link)
 GET  /guide?q=...                   → 200 (批量清单 deep link)

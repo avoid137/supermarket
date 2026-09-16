@@ -22,8 +22,8 @@ onMounted(async () => {
       <div class="brand">
         <div class="logo">智</div>
         <div class="brand-text">
-          <h1>智选无人超市</h1>
-          <p class="dim tagline">智能导购与自适应视觉结账一体化系统</p>
+          <h1>智选</h1>
+          <p class="dim tagline">无人零售导购 Agent 与多模态结账系统</p>
         </div>
       </div>
 

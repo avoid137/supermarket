@@ -77,7 +77,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description="无人超市智能导购与自适应视觉结账一体化系统 - 后端服务",
+    description="智选 · 无人零售导购 Agent 与多模态结账系统 - 后端服务",
     lifespan=lifespan,
 )
 

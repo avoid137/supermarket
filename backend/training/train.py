@@ -66,7 +66,7 @@ def main() -> None:
     except ImportError:
         raise SystemExit(
             "未安装 ultralytics。请先执行：\n"
-            "  D:/envs/supermarketenv/python.exe -m pip install ultralytics"
+            "  python -m pip install ultralytics"
         )
 
     device = args.device or None

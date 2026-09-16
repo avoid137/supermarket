@@ -10,7 +10,7 @@
 提示「还有 N 件未确认（其中 M 件未识别到品类）」），且不破坏正常
 （全 auto）结账流程，也不会误拦已人工指认（resolved）的项。
 
-运行：D:/envs/supermarketenv/python.exe tests/test_confirm_guard.py
+运行（在 backend 目录下）：python tests/test_confirm_guard.py
 """
 import sys
 from pathlib import Path

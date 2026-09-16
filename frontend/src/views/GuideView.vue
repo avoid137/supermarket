@@ -85,7 +85,7 @@ function pushWelcome() {
   messages.value.push({
     id: ++seq,
     role: 'assistant',
-    text: '你好，我是智选无人超市的导购助手。\n可以问我商品位置、营养成分、当前优惠，也可以让我帮你搭配。',
+    text: '你好，我是智选的导购助手。\n可以问我商品位置、营养成分、当前优惠，也可以让我帮你搭配。',
   })
 }
 
@@ -397,7 +397,7 @@ onBeforeUnmount(() => {
         <header class="shop">
           <div class="shop-avatar">智</div>
           <div class="shop-info">
-            <strong>智选无人超市</strong>
+            <strong>智选</strong>
             <span class="dim">A1 饮料 · A2 零食 · A3 日用</span>
           </div>
           <button class="scan-btn" :title="scanSupported ? '扫一扫商品条码' : '扫一扫 / 手动输入 SKU'" @click="openScanner">
