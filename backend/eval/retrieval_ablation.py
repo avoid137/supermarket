@@ -1,4 +1,4 @@
-"""导购检索层对照实验：七种检索策略 × 两个输入口径，量化「混合检索」到底值多少钱。
+"""导购检索层对照实验：九种检索策略 × 两个输入口径，量化「混合检索」到底值多少钱。
 
 背景
 ----
@@ -7,15 +7,22 @@
 这个配比是设计出来的，一直没有人验证过「换成别的做法会怎样」。
 本脚本把「检索方案是拍脑袋还是选出来的」这个问题补上。
 
-七种策略（同一份商品库、同一批 query，只换排序逻辑）
+九种策略（同一份商品库、同一批 query，只换排序逻辑）
 ----
   literal        纯字面：keyword_score（完全相等 / 子串 / 品牌 / 规格 / 标签 / 二元组重叠）
   attr           纯属性语义：semantic_score（颜色/形状/品类/健康/口味/价格/过敏原词典）
   hybrid         现线上：0.65*sem + 0.35*kw，阈值 8.0（直接调用 rank_products）
+  rrf_2way       两路 RRF（字面 + 属性），**不含向量**
+  weighted_3way  三路加权求和（每路内部归一化后各占 1/3）+ 结构化闸门
   vector         纯向量：DashScope text-embedding-v3（1024 维）余弦相似度
   rrf_open       三路 RRF 融合，字母/属性/向量都能放行
   rrf_gated      三路 RRF 融合，闸门只认结构化信号（字面 / 属性）
   rrf_strongvec  三路 RRF 融合，闸门 = 结构化信号 或「向量 top1 且余弦 ≥ 0.60」
+
+`rrf_2way` 与 `weighted_3way` 是为了把「加向量路」和「换融合方式」两个变量拆开而补的：
+第一轮读法是「该换的是加权求和 → RRF」，但两路 RRF 只有 82.7%、比现线上还差 9.6pp，
+说明这个读法不完整。2×2 拆解后才看清「向量路 + RRF 必须配套」。
+（详见 results/retrieval_report.md）
 
 两个输入口径（这一步很关键）
 ----
@@ -64,7 +71,6 @@ from app.services import llm  # noqa: E402
 from app.services.search import (  # noqa: E402
     extract_attributes,
     keyword_score,
-    rank_products,
     semantic_score,
     strip_question_words,
 )
@@ -241,9 +247,35 @@ def rank_attr(products, query: str, **_) -> list[str]:
     return _by_score([(semantic_score(p, attrs), p.sku_id) for p in products], 0.0)
 
 
+def _frozen_legacy_ranking(products, query: str) -> list[str]:
+    """冻结的旧线上排序（2026-09-16 改动前的实现），作为对照基线。
+
+    刻意**复制**而不是调用 `app/services/search.py` 的 `rank_products`：
+    否则下一步线上实现一升级（改成三路 RRF），本实验的「现线上」基线就会跟着漂移，
+    历史报告里的 92.3% 再也复现不出来，事后也无法判断"到底改好了没有"。
+
+    这段代码与产品代码的等价性由 `tests/db_test.py` 里的检索断言兜底
+    （改动前的线上行为有回归测试保护）。
+    """
+    attrs = extract_attributes(query)
+    core = strip_question_words(query)
+
+    def single(p, q: str) -> float:
+        kw = min(keyword_score(p, q), 100.0)
+        sem = semantic_score(p, attrs) if attrs.hit_count else 0.0
+        return 0.65 * sem + 0.35 * kw if attrs.hit_count else kw
+
+    ranked: list[tuple[float, str]] = []
+    for p in products:
+        final = max(single(p, query), single(p, core))
+        if final >= 8.0:
+            ranked.append((final, p.sku_id))
+    ranked.sort(key=lambda t: (-t[0], t[1]))
+    return [sku for _, sku in ranked]
+
+
 def rank_hybrid(products, query: str, **_) -> list[str]:
-    # 线上现状：直接调用产品代码，保证实验基线与线上逐字一致
-    return [p.sku_id for p in rank_products(products, query, top_k=len(products))]
+    return _frozen_legacy_ranking(products, query)
 
 
 def rank_vector(products, query: str, *, vecs, qvec, **_) -> list[str]:
@@ -251,7 +283,13 @@ def rank_vector(products, query: str, *, vecs, qvec, **_) -> list[str]:
 
 
 def _rrf_core(
-    products, query: str, vecs, qvec, gate_with_vector: bool, strong_vec_thr: float | None = None
+    products,
+    query: str,
+    vecs,
+    qvec,
+    gate_with_vector: bool,
+    strong_vec_thr: float | None = None,
+    use_vector: bool = True,
 ) -> list[str]:
     """三路 RRF 融合排序 + 闸门。
 
@@ -262,6 +300,10 @@ def _rrf_core(
     向量路天然永远存在「最近邻」，它对「库里根本没有这个东西」没有表达能力
     （iPhone 在 29 SKU 里总能找到最像的一件）。让向量参与放行，召回更高但库外题必漏闸——
     实验把这条取舍的代价量化了出来。
+
+    `use_vector=False` 则更进一步：连向量路都不参与排序。线上要加向量路，
+    每次检索就得多等一次 embedding 请求（延迟 + 外部依赖 + 需要商品向量缓存），
+    所以必须先用数据回答「省掉向量会损失多少召回」。
     """
     attrs = extract_attributes(query)
     core = strip_question_words(query)
@@ -273,7 +315,7 @@ def _rrf_core(
 
     lit = _by_score([(keyword_score(p, core), p.sku_id) for p in pool], None)
     att = _by_score([(semantic_score(p, attrs), p.sku_id) for p in pool], None) if attrs.hit_count else []
-    vec = _by_score([(cosine(qvec, vecs[p.sku_id]), p.sku_id) for p in pool], None)
+    vec = _by_score([(cosine(qvec, vecs[p.sku_id]), p.sku_id) for p in pool], None) if use_vector and qvec else []
 
     fused: dict[str, float] = {}
     for ranked in (lit, att, vec):
@@ -283,8 +325,12 @@ def _rrf_core(
     # 闸门：结构化信号（字面 / 属性）过阈值 = 「库里有这件东西」的实证
     ok_lit = set(_by_score([(keyword_score(p, core), p.sku_id) for p in pool], LITERAL_MIN))
     ok_att = set(_by_score([(semantic_score(p, attrs), p.sku_id) for p in pool], 0.0)) if attrs.hit_count else set()
-    ok_vec = set(_by_score([(cosine(qvec, vecs[p.sku_id]), p.sku_id) for p in pool], VECTOR_MIN))
-    gate = ok_lit | ok_att | (ok_vec if gate_with_vector else set())
+    ok_vec = (
+        set(_by_score([(cosine(qvec, vecs[p.sku_id]), p.sku_id) for p in pool], VECTOR_MIN))
+        if gate_with_vector and use_vector and qvec
+        else set()
+    )
+    gate = ok_lit | ok_att | ok_vec
 
     # 第三条路：结构化兜底 + 高阈值向量补召回。
     # 只在「向量 top1 的余弦足够高」时放行这一件——库外题最高 0.560、库内中位 0.713，
@@ -308,14 +354,66 @@ def rank_rrf_strongvec(products, query: str, *, vecs, qvec, **_):
     return _rrf_core(products, query, vecs, qvec, gate_with_vector=False, strong_vec_thr=VECTOR_STRONG)
 
 
+def rank_rrf_2way(products, query: str, *, vecs, qvec, **_):
+    """两路 RRF（字面 + 属性），**不含向量**。
+
+    线上要加向量路，每次检索就得多等一次 embedding 请求，还会多一个外部故障点
+    （DashScope 挂了检索就得降级）。所以先用数据回答：省掉向量会损失多少召回？
+    如果两路已经够用，那「不上向量」就是有依据的工程决策，而不是妥协。
+    """
+    return _rrf_core(products, query, vecs, qvec, gate_with_vector=False, use_vector=False)
+
+
+def _norm(items: list[tuple[float, str]]) -> dict[str, float]:
+    """单路内部归一化到 [0,1]。每路自成一个尺度，避免跨量纲折算。"""
+    mx = max((s for s, _ in items), default=0.0)
+    if mx <= 0:
+        return {}
+    return {sku: max(s, 0.0) / mx for s, sku in items}
+
+
+def rank_weighted_3way(products, query: str, *, vecs, qvec, **_):
+    """三路**加权求和**（每路内部归一化后各占 1/3）+ 结构化闸门。
+
+    存在的唯一目的：把「加向量路」与「换融合方式」这两个变量拆开。
+
+    前一轮实验得出「该换的是加权求和 → RRF」，但两路 RRF 只有 82.7%、
+    比两路加权求和（现线上 92.3%）还差 9.6pp——这提示 RRF 在这两路上并不占优，
+    真正起作用的可能是「多了向量这一路」。本策略保持加权求和不变、只加向量路：
+    若它追平三路 RRF，说明该加的是向量路，融合方式无关紧要；
+    若它明显落后，RRF 的贡献才成立。
+    """
+    attrs = extract_attributes(query)
+    core = strip_question_words(query)
+    pool = products
+    if attrs.exclude_allergens:
+        pool = [p for p in products if not any(a in p.allergens for a in attrs.exclude_allergens)]
+
+    parts = [
+        _norm([(keyword_score(p, core), p.sku_id) for p in pool]),
+        _norm([(semantic_score(p, attrs), p.sku_id) for p in pool]) if attrs.hit_count else {},
+        _norm([(cosine(qvec, vecs[p.sku_id]), p.sku_id) for p in pool]) if qvec else {},
+    ]
+    fused = {sku: sum(d.get(sku, 0.0) for d in parts) / 3.0 for p in pool for sku in [p.sku_id]}
+
+    ok_lit = set(_by_score([(keyword_score(p, core), p.sku_id) for p in pool], LITERAL_MIN))
+    ok_att = set(_by_score([(semantic_score(p, attrs), p.sku_id) for p in pool], 0.0)) if attrs.hit_count else set()
+    gate = ok_lit | ok_att
+
+    ranked_all = sorted(fused.items(), key=lambda kv: (-kv[1], kv[0]))
+    return [sku for sku, _ in ranked_all if sku in gate]
+
+
 STRATEGIES = {
     "literal": ("纯字面（关键词）", rank_literal),
     "attr": ("纯属性语义（规则词典）", rank_attr),
-    "hybrid": ("现线上（0.65 属性 + 0.35 字面）", rank_hybrid),
+    "hybrid": ("现线上（两路加权求和）", rank_hybrid),
+    "rrf_2way": ("两路 RRF（字面 + 属性，无向量）", rank_rrf_2way),
+    "weighted_3way": ("三路加权求和（+向量）", rank_weighted_3way),
     "vector": ("纯向量（text-embedding-v3）", rank_vector),
-    "rrf_open": ("RRF 融合（向量也参与放行）", rank_rrf_open),
-    "rrf_gated": ("RRF + 结构化闸门", rank_rrf_gated),
-    "rrf_strongvec": ("RRF + 结构化闸门 + 强向量补召回", rank_rrf_strongvec),
+    "rrf_open": ("三路 RRF（向量也参与放行）", rank_rrf_open),
+    "rrf_gated": ("三路 RRF + 结构化闸门（推荐）", rank_rrf_gated),
+    "rrf_strongvec": ("三路 RRF + 结构化闸门 + 强向量补召回", rank_rrf_strongvec),
 }
 
 
@@ -495,14 +593,40 @@ def write_report(all_results: dict[str, dict], probe: dict, products, cases, kw_
             f"正说明它的瓶颈就是长句稀释 bigram；向量受影响最小"
             f"（{(kw_r['vector']['recall@1']-raw_r['vector']['recall@1'])*100:+.1f}pp），两者是同一件事的两面。"
         )
+
+        w2 = kw_r["hybrid"]["recall@1"] * 100
+        r2 = kw_r["rrf_2way"]["recall@1"] * 100
+        w3 = kw_r["weighted_3way"]["recall@1"] * 100
+        r3 = kw_r["rrf_gated"]["recall@1"] * 100
+        lines.append("\n### 拆开看：起作用的是「加向量」还是「换融合方式」？\n")
         lines.append(
-            f"- 口径二下同时拿到最高召回与 100% 闸门的是 **{STRATEGIES['rrf_gated'][0]}**："
-            f"R@1 {kw_r['rrf_gated']['recall@1']*100:.1f}% vs 现线上 {kw_r['hybrid']['recall@1']*100:.1f}%，"
-            f"R@3 {kw_r['rrf_gated']['recall@3']*100:.1f}% vs {kw_r['hybrid']['recall@3']*100:.1f}%，闸门同为 100%。"
-            f"也就是说：**该换的不是「字面 vs 向量」，而是「加权求和 vs RRF 融合」**。"
+            "第一轮的读法是「该换的是加权求和 → RRF」。补测两路 RRF（不含向量）后发现这个读法**不完整**——"
+            f"两路 RRF 只有 **{r2:.1f}%**，比现线上（{w2:.1f}%）还差 {w2-r2:.1f}pp。把两个变量拆开：\n"
+        )
+        lines.append("| | 两路（字面 + 属性） | 三路（+ 向量） |")
+        lines.append("| --- | --- | --- |")
+        lines.append(f"| **加权求和** | {w2:.1f}%（现线上） | {w3:.1f}% |")
+        lines.append(f"| **RRF** | {r2:.1f}% | **{r3:.1f}%** |")
+        lines.append("")
+        lines.append(
+            f"- 加权求和下加向量路：**没有任何变化**（{w2:.1f}% → {w3:.1f}%）。"
+            "等权归一化平均会把向量的贡献稀释掉——余弦 top1 归一化后是 1.0、第二名 0.98，区分度被抹平。"
         )
         lines.append(
-            f"- `rrf_strongvec` 与 `rrf_gated` 的全部指标完全相同：0.60 那条「强向量补召回」路径"
+            f"- RRF 下加向量路：**{r3-r2:+.1f}pp**（{r2:.1f}% → {r3:.1f}%）。"
+            f"向量单路 R@1 {kw_r['vector']['recall@1']*100:.1f}% 是全场最高的排序质量，"
+            "而 RRF 靠「排名投票」而不是分数求和，正好能把它用起来：向量认为对的商品，"
+            "即使字面 / 属性路只排第 3~5 位，三路名次叠加后也能被顶到第一。"
+        )
+        lines.append(f"- 而 RRF 在两路时反而比加权求和差 **{w2-r2:.1f}pp**——所以「换融合方式」本身不是收益来源。")
+        lines.append(
+            f"\n> **结论修正：「向量路」与「RRF 融合」必须配套。** 单加向量（放进加权求和里）**无效**，"
+            f"单换融合（两路 RRF）**有害**，两者一起才拿到 **{r3:.1f}%**。"
+            "这也解释了现线上 0.65 / 0.35 的配比为什么「看起来调得还行」——"
+            "它是两路形态下的合理选择，但到不了三路 RRF 的水平。"
+        )
+        lines.append(
+            f"- 另外 `rrf_strongvec` 与 `rrf_gated` 的全部指标完全相同：0.60 那条「强向量补召回」路径"
             "没有产生任何增量，是应该被删掉的复杂度。负结果留在这里，免得下次有人再想一遍。\n"
         )
 
