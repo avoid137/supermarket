@@ -25,6 +25,10 @@ backend/data/*.db.bak-*
 # 结账抓拍审计图是运行时生成的顾客照片，不入库
 backend/data/audit_photos/
 
+# ---- 评测向量缓存（3MB+，可由商品文本 + embedding 模型重算，不入库）----
+# 关键词改写缓存 retrieval_queries.json 只有 4KB 且人工可复核，保留入库
+backend/eval/results/retrieval_vectors.json
+
 # ---- YOLO 训练数据与产物（图片/标注/权重体积大，不入库；class_map.json、data.yaml 等配置保留）----
 backend/training/datasets/
 backend/training/runs/
