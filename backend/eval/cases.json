@@ -1,0 +1,1517 @@
+{
+  "_readme": [
+    "导购 Agent 评测集。真值不手抄，全部由 backend/app/data/products.py 派生（见 eval/catalog_snapshot.json），",
+    "避免人肉誊写引入的数值错误。facts 里的 sku/field 由 score_eval.py 解析成可核验的具体事实。",
+    "",
+    "字段说明：",
+    "  id         用例编号，G=导购",
+    "  q          顾客提问",
+    "  cat        类别，用于分组统计",
+    "  history    多轮对话上文（可选）",
+    "  expect_tools  {mode, names}；mode ∈ all_of | any_of | none | optional",
+    "  allow_skus 回答中允许出现的商品（用于判定越界/答非所问）；[] 表示不应提及任何商品",
+    "  abstain    true 表示本题正确答案是「拒绝/说明没有」，此时任何价格·货架·库存断言都记为幻觉",
+    "  facts      必须被回答覆盖的事实，全部满足才算「事实正确」",
+    "  forbid     出现即判幻觉的表述（可选）；若处于「避开 / 不要 / 不含」等否定语境则不算",
+    "  open_scope true 表示开放性提问（推荐 / 咨询），允许顺手推荐范围外商品，不参与越界判定",
+    "  note       出题意图，便于人工复核"
+  ],
+  "cases": [
+    {
+      "id": "G01",
+      "cat": "价格",
+      "q": "可口可乐多少钱？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "facts": [
+        {
+          "t": "price",
+          "sku": "SKU001"
+        }
+      ],
+      "note": "最基础的价格查询，基准题"
+    },
+    {
+      "id": "G02",
+      "cat": "价格",
+      "q": "百事可乐 330ml 罐装多少钱一罐？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "facts": [
+        {
+          "t": "price",
+          "sku": "SKU002"
+        }
+      ],
+      "note": "含品牌+规格的精确查询"
+    },
+    {
+      "id": "G03",
+      "cat": "价格",
+      "q": "元气森林白桃味的气泡水多少钱？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU003",
+        "SKU004"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU003"
+        },
+        {
+          "t": "price",
+          "sku": "SKU003"
+        }
+      ],
+      "note": "同品牌同名不同口味，考口味区分"
+    },
+    {
+      "id": "G04",
+      "cat": "价格",
+      "q": "农夫山泉的矿泉水价格是多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU005",
+        "SKU026"
+      ],
+      "facts": [
+        {
+          "t": "price",
+          "sku": "SKU005"
+        }
+      ],
+      "note": "农夫山泉旗下有两款商品（水 / 果汁），价格不同"
+    },
+    {
+      "id": "G05",
+      "cat": "价格",
+      "q": "三只松鼠每日坚果多少钱？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "price",
+          "sku": "SKU013"
+        }
+      ],
+      "note": "单价最高的零食，考高价位数不被含糊"
+    },
+    {
+      "id": "G06",
+      "cat": "价格",
+      "q": "蓝月亮洗衣液怎么卖？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU021"
+      ],
+      "facts": [
+        {
+          "t": "price",
+          "sku": "SKU021"
+        }
+      ],
+      "note": "日用品类价格"
+    },
+    {
+      "id": "G07",
+      "cat": "价格",
+      "q": "乐事黄瓜味薯片 70 克的价格？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU009",
+        "SKU029"
+      ],
+      "facts": [
+        {
+          "t": "price",
+          "sku": "SKU009"
+        }
+      ],
+      "note": "★同款不同规格（70g / 40g 售价 6.5 / 4.0），考规格消歧"
+    },
+    {
+      "id": "G08",
+      "cat": "价格",
+      "q": "10 块钱以内的饮料有哪些？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002",
+        "SKU003",
+        "SKU004",
+        "SKU005",
+        "SKU006",
+        "SKU007",
+        "SKU008",
+        "SKU026",
+        "SKU028"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU005",
+            "SKU001",
+            "SKU003",
+            "SKU006"
+          ]
+        }
+      ],
+      "note": "价格区间筛选，预设工具下的模糊题、SQL 兜底也能答"
+    },
+    {
+      "id": "G09",
+      "cat": "货架位置",
+      "q": "可口可乐放在哪个货架？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU001"
+        }
+      ],
+      "note": "位置查询基准题"
+    },
+    {
+      "id": "G10",
+      "cat": "货架位置",
+      "q": "东方树叶乌龙茶在哪儿？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU006"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU006"
+        }
+      ],
+      "note": "「在哪儿」是口语化问法，考疑问词剥离"
+    },
+    {
+      "id": "G11",
+      "cat": "货架位置",
+      "q": "抽纸在哪个区？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU019"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU019"
+        }
+      ],
+      "note": "「纸」是品类俗称，商品名里没有「纸」以外的线索"
+    },
+    {
+      "id": "G12",
+      "cat": "货架位置",
+      "q": "薯片都放在哪几个货架？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU009",
+        "SKU010",
+        "SKU027",
+        "SKU029"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU010"
+        }
+      ],
+      "note": "多商品同位置，A2 货架"
+    },
+    {
+      "id": "G13",
+      "cat": "货架位置",
+      "q": "3M 口罩放在哪里？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU022"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU022"
+        }
+      ],
+      "note": "含英文品牌的查询"
+    },
+    {
+      "id": "G14",
+      "cat": "货架位置",
+      "q": "我想买牙膏，怎么走？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU020"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU020"
+        }
+      ],
+      "note": "「怎么走」考方位描述"
+    },
+    {
+      "id": "G15",
+      "cat": "营养成分",
+      "q": "乐事原味薯片的热量是多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU010",
+        "SKU027"
+      ],
+      "facts": [
+        {
+          "t": "nutri",
+          "sku": "SKU010",
+          "field": "energy_kj"
+        }
+      ],
+      "note": "热量 = 能量 kJ，考术语映射"
+    },
+    {
+      "id": "G16",
+      "cat": "营养成分",
+      "q": "可口可乐的碳水化合物含量是多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "facts": [
+        {
+          "t": "nutri",
+          "sku": "SKU001",
+          "field": "carb_g"
+        }
+      ],
+      "note": "碳水 10.6 g"
+    },
+    {
+      "id": "G17",
+      "cat": "营养成分",
+      "q": "特仑苏纯牛奶的蛋白质含量？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU007"
+      ],
+      "facts": [
+        {
+          "t": "nutri",
+          "sku": "SKU007",
+          "field": "protein_g"
+        }
+      ],
+      "note": "蛋白质 3.3 g"
+    },
+    {
+      "id": "G18",
+      "cat": "营养成分",
+      "q": "卫龙亲嘴烧的钠含量高不高？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU014"
+      ],
+      "facts": [
+        {
+          "t": "nutri",
+          "sku": "SKU014",
+          "field": "sodium_mg"
+        }
+      ],
+      "note": "钠 2000 mg，全库最高，答案应给出数字而非空泛判断"
+    },
+    {
+      "id": "G19",
+      "cat": "营养成分",
+      "q": "三顿半咖啡的配料是什么？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU008"
+      ],
+      "facts": [
+        {
+          "t": "ingredient_kw",
+          "sku": "SKU008",
+          "kw": "阿拉比卡"
+        }
+      ],
+      "note": "配料表原文"
+    },
+    {
+      "id": "G20",
+      "cat": "营养成分",
+      "q": "元气森林白桃味气泡水含糖吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU003",
+        "SKU004"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "赤藓糖醇|0\\s*糖|无糖|不含糖"
+        }
+      ],
+      "note": "标签 0糖、配料用赤藓糖醇——考「含糖吗」的准确定性回答；商品名事实已删除——配料命中即可证明识别到了正确商品"
+    },
+    {
+      "id": "G21",
+      "cat": "营养成分",
+      "q": "士力架的热量和脂肪是多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU015"
+      ],
+      "facts": [
+        {
+          "t": "nutri",
+          "sku": "SKU015",
+          "field": "energy_kj"
+        },
+        {
+          "t": "nutri",
+          "sku": "SKU015",
+          "field": "fat_g"
+        }
+      ],
+      "note": "一题问两个数值，考信息完整度"
+    },
+    {
+      "id": "G22",
+      "cat": "营养成分",
+      "q": "崂山啤酒的酒精度是多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU028"
+      ],
+      "facts": [
+        {
+          "t": "ingredient_kw",
+          "sku": "SKU028",
+          "kw": "4.0"
+        }
+      ],
+      "note": "酒精度写在配料表「酒精度 4.0%vol」里，不在营养表"
+    },
+    {
+      "id": "G23",
+      "cat": "营养成分",
+      "q": "奥利奥夹心饼干原味的钠含量是多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU011",
+        "SKU025"
+      ],
+      "facts": [
+        {
+          "t": "any_of_nutri",
+          "skus": [
+            "SKU011",
+            "SKU025"
+          ],
+          "field": "sodium_mg"
+        }
+      ],
+      "note": "★两个规格钠含量不同（350 / 144），未指定规格时给出任一都算对，编造第三个数则算错"
+    },
+    {
+      "id": "G24",
+      "cat": "营养成分",
+      "q": "炫迈口香糖含糖吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU017"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "无糖|木糖醇|不含糖"
+        }
+      ],
+      "note": "标签含「无糖」"
+    },
+    {
+      "id": "G25",
+      "cat": "过敏原",
+      "q": "特仑苏纯牛奶的过敏原是什么？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU007"
+      ],
+      "facts": [
+        {
+          "t": "allergen",
+          "sku": "SKU007",
+          "name": "牛奶"
+        }
+      ],
+      "note": "过敏原 牛奶"
+    },
+    {
+      "id": "G26",
+      "cat": "过敏原",
+      "q": "我想买没有花生和坚果的零食，能推荐几款吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database",
+          "recommend_pairing"
+        ]
+      },
+      "allow_skus": [
+        "SKU009",
+        "SKU010",
+        "SKU011",
+        "SKU012",
+        "SKU014",
+        "SKU016",
+        "SKU017",
+        "SKU018",
+        "SKU025",
+        "SKU027",
+        "SKU029"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU010",
+            "SKU011",
+            "SKU016",
+            "SKU014",
+            "SKU017",
+            "SKU027"
+          ]
+        }
+      ],
+      "forbid": [
+        "士力架",
+        "每日坚果"
+      ],
+      "note": "★排除型需求（花生 / 坚果），必须避开 SKU015 与 SKU013"
+    },
+    {
+      "id": "G27",
+      "cat": "过敏原",
+      "q": "三只松鼠每日坚果里都有什么？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "ingredient_kw",
+          "sku": "SKU013",
+          "kw": "腰果"
+        }
+      ],
+      "note": "配料枚举"
+    },
+    {
+      "id": "G28",
+      "cat": "过敏原",
+      "q": "好丽友巧克力派含鸡蛋吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU012"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "鸡蛋"
+        }
+      ],
+      "note": "过敏原 小麦/鸡蛋/牛奶 → 含鸡蛋"
+    },
+    {
+      "id": "G29",
+      "cat": "过敏原",
+      "q": "我对小麦过敏，乐事原味薯片能吃吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU010",
+        "SKU027"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "不含小麦|无小麦|没有小麦|未标注|过敏原.{0,6}(无|不含)|放心"
+        }
+      ],
+      "note": "★乐事原味 70g/40g 过敏原为空（黄瓜味才含小麦），考规格间过敏原差异"
+    },
+    {
+      "id": "G30",
+      "cat": "过敏原",
+      "q": "士力架里有什么过敏原？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU015"
+      ],
+      "facts": [
+        {
+          "t": "allergen",
+          "sku": "SKU015",
+          "name": "花生"
+        }
+      ],
+      "note": "过敏原 花生/牛奶/大豆"
+    },
+    {
+      "id": "G31",
+      "cat": "促销",
+      "q": "今天店里有什么促销活动？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_promotions",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002",
+        "SKU005",
+        "SKU011",
+        "SKU025"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "第二件半价|第二件"
+        }
+      ],
+      "note": "全店促销汇总，本店唯一促销类型"
+    },
+    {
+      "id": "G32",
+      "cat": "促销",
+      "q": "可口可乐有优惠吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_promotions",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "facts": [
+        {
+          "t": "promo",
+          "sku": "SKU001"
+        }
+      ],
+      "note": "单品促销"
+    },
+    {
+      "id": "G33",
+      "cat": "促销",
+      "q": "奥利奥在做活动吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_promotions",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU011",
+        "SKU025"
+      ],
+      "facts": [
+        {
+          "t": "promo",
+          "sku": "SKU011"
+        }
+      ],
+      "note": "★奥利奥两个规格都参与第二件半价"
+    },
+    {
+      "id": "G34",
+      "cat": "促销",
+      "q": "农夫山泉的水有活动吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_promotions",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU005",
+        "SKU026"
+      ],
+      "facts": [
+        {
+          "t": "promo",
+          "sku": "SKU005"
+        }
+      ],
+      "note": "★同品牌「水」有促销、「果汁」没有，考不把促销错误外溢"
+    },
+    {
+      "id": "G35",
+      "cat": "库存",
+      "q": "特仑苏纯牛奶还有货吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "check_stock",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU007"
+      ],
+      "facts": [
+        {
+          "t": "stock",
+          "sku": "SKU007"
+        }
+      ],
+      "note": "库存 97"
+    },
+    {
+      "id": "G36",
+      "cat": "库存",
+      "q": "三只松鼠每日坚果库存还剩多少？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "check_stock",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "stock",
+          "sku": "SKU013"
+        }
+      ],
+      "note": "库存 97，考具体数字"
+    },
+    {
+      "id": "G37",
+      "cat": "库存",
+      "q": "我想买 10 瓶可口可乐，够吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "check_stock",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "facts": [
+        {
+          "t": "stock",
+          "sku": "SKU001"
+        }
+      ],
+      "note": "★购买决策题，prompt 第 7 条要求主动查库存"
+    },
+    {
+      "id": "G38",
+      "cat": "库存",
+      "q": "士力架还有货吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "check_stock",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU015"
+      ],
+      "facts": [
+        {
+          "t": "stock",
+          "sku": "SKU015"
+        }
+      ],
+      "note": "库存 97"
+    },
+    {
+      "id": "G39",
+      "cat": "库存",
+      "q": "卫龙亲嘴烧我要买 5 包，够不够？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "check_stock",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU014"
+      ],
+      "facts": [
+        {
+          "t": "stock",
+          "sku": "SKU014"
+        }
+      ],
+      "note": "库存 97"
+    },
+    {
+      "id": "G40",
+      "cat": "搭配推荐",
+      "q": "买薯片配什么饮料好？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "recommend_pairing",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002",
+        "SKU003",
+        "SKU004",
+        "SKU005",
+        "SKU006",
+        "SKU009",
+        "SKU010",
+        "SKU027",
+        "SKU029"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU001",
+            "SKU002",
+            "SKU003",
+            "SKU005",
+            "SKU006"
+          ]
+        }
+      ],
+      "note": "开放推荐，只要给出库内饮料即可",
+      "open_scope": true
+    },
+    {
+      "id": "G41",
+      "cat": "搭配推荐",
+      "q": "喝三顿半咖啡配点什么零食？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "recommend_pairing",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU008",
+        "SKU011",
+        "SKU012",
+        "SKU016",
+        "SKU025"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU011",
+            "SKU012",
+            "SKU016"
+          ]
+        }
+      ],
+      "note": "咖啡+饼干/糕点 是代码里配置的搭配规则",
+      "open_scope": true
+    },
+    {
+      "id": "G42",
+      "cat": "搭配推荐",
+      "q": "巧克力配什么能解腻？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "recommend_pairing",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU015",
+        "SKU003",
+        "SKU004",
+        "SKU006"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU003",
+            "SKU004",
+            "SKU006"
+          ]
+        }
+      ],
+      "note": "巧克力→无糖茶/0卡 是代码里配置的搭配规则",
+      "open_scope": true
+    },
+    {
+      "id": "G43",
+      "cat": "语义检索",
+      "q": "我想要红色的罐装饮料",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002",
+        "SKU026"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU001",
+            "SKU002"
+          ]
+        }
+      ],
+      "note": "★属性语义检索基准题：字面零重叠，必须靠颜色+包装形状命中"
+    },
+    {
+      "id": "G44",
+      "cat": "语义检索",
+      "q": "有没有无糖的饮料？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU003",
+        "SKU004",
+        "SKU005",
+        "SKU006",
+        "SKU017"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU003",
+            "SKU004",
+            "SKU006"
+          ]
+        }
+      ],
+      "note": "0糖标签 → 元气森林双口味 + 东方树叶；炫迈无糖口香糖同属「无糖」类，被顺带提及不算越界"
+    },
+    {
+      "id": "G45",
+      "cat": "语义检索",
+      "q": "大瓶装的日用品有哪些？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU019",
+        "SKU020",
+        "SKU021",
+        "SKU022",
+        "SKU023",
+        "SKU024"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU021",
+            "SKU023"
+          ]
+        }
+      ],
+      "note": "tag 里带「大瓶装」的是洗衣液与除菌液"
+    },
+    {
+      "id": "G46",
+      "cat": "语义检索",
+      "q": "给我推荐一个 5 元以下的零食",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU015",
+        "SKU027",
+        "SKU029"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU027",
+            "SKU029",
+            "SKU015"
+          ]
+        }
+      ],
+      "note": "★价格上限筛选：全库 5 元以下零食只有士力架(4.5)/乐事40g(4.0)"
+    },
+    {
+      "id": "G47",
+      "cat": "多条件筛选",
+      "q": "饮料里最便宜的是哪个？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU005",
+        "SKU001",
+        "SKU002",
+        "SKU026",
+        "SKU028"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU005"
+        }
+      ],
+      "note": "★聚合题（MIN），预设工具覆盖不了，正解是走 SQL 兜底；正解必须走 SQL 兜底，用 search_product 会答错（曾把最便宜的饮料说成可乐）"
+    },
+    {
+      "id": "G48",
+      "cat": "多条件筛选",
+      "q": "你们店里一共有多少款零食？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU009",
+        "SKU010",
+        "SKU011",
+        "SKU012",
+        "SKU013",
+        "SKU014",
+        "SKU015",
+        "SKU016",
+        "SKU017",
+        "SKU018",
+        "SKU025",
+        "SKU027",
+        "SKU029"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "13"
+        }
+      ],
+      "note": "★计数题（COUNT），真值 13 款零食"
+    },
+    {
+      "id": "G49",
+      "cat": "多条件筛选",
+      "q": "既无糖又是茶的饮料有吗？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "query_product_database",
+          "search_product"
+        ]
+      },
+      "allow_skus": [
+        "SKU006",
+        "SKU003",
+        "SKU004"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU006"
+        }
+      ],
+      "note": "★多条件交集：无糖茶只有东方树叶"
+    },
+    {
+      "id": "G50",
+      "cat": "多轮对话",
+      "q": "那还有货吗？",
+      "history": [
+        {
+          "role": "user",
+          "content": "乐事原味薯片多少钱？"
+        },
+        {
+          "role": "assistant",
+          "content": "乐事原味薯片 70g 袋装，售价 6.5 元，会员价 5.9 元，在 A2 货架第 2 层。"
+        }
+      ],
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "check_stock",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU010",
+        "SKU027"
+      ],
+      "facts": [
+        {
+          "t": "stock",
+          "sku": "SKU010"
+        }
+      ],
+      "note": "★指代消解：「那」指上一轮的乐事原味薯片"
+    },
+    {
+      "id": "G51",
+      "cat": "多轮对话",
+      "q": "它含糖吗？",
+      "history": [
+        {
+          "role": "user",
+          "content": "元气森林白桃味气泡水多少钱？"
+        },
+        {
+          "role": "assistant",
+          "content": "元气森林白桃味苏打气泡水 480ml，5.5 元一瓶，会员价 4.9 元。"
+        }
+      ],
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_nutrition",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU003",
+        "SKU004"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "赤藓糖醇|0\\s*糖|无糖|不含糖"
+        }
+      ],
+      "note": "★指代消解：「它」指上一轮的气泡水"
+    },
+    {
+      "id": "G52",
+      "cat": "多轮对话",
+      "q": "它放在哪里？",
+      "history": [
+        {
+          "role": "user",
+          "content": "三只松鼠每日坚果多少钱？"
+        },
+        {
+          "role": "assistant",
+          "content": "三只松鼠每日坚果 25g×7 袋，39.9 元，会员价 35.9 元。"
+        }
+      ],
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "get_location",
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "shelf",
+          "sku": "SKU013"
+        }
+      ],
+      "note": "★指代消解 + 跨轮换意图（价格 → 位置）"
+    },
+    {
+      "id": "G53",
+      "cat": "负例·拒答",
+      "q": "你们店有卖 iPhone 吗？",
+      "expect_tools": {
+        "mode": "optional",
+        "names": []
+      },
+      "allow_skus": [],
+      "abstain": true,
+      "facts": [
+        {
+          "t": "negative"
+        }
+      ],
+      "note": "★清单外商品，正确行为是明确说没有，不得给出任何价格"
+    },
+    {
+      "id": "G54",
+      "cat": "负例·拒答",
+      "q": "帮我查一下隔壁超市的可乐价格。",
+      "expect_tools": {
+        "mode": "optional",
+        "names": []
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU002"
+      ],
+      "abstain": false,
+      "facts": [
+        {
+          "t": "negative"
+        }
+      ],
+      "note": "★越界请求（别家超市的数据），正确行为是说明只能查本店"
+    },
+    {
+      "id": "G55",
+      "cat": "负例·拒答",
+      "q": "有三文鱼刺身吗？",
+      "expect_tools": {
+        "mode": "optional",
+        "names": []
+      },
+      "allow_skus": [],
+      "abstain": true,
+      "facts": [
+        {
+          "t": "negative"
+        }
+      ],
+      "note": "★清单外品类，不得编造价格与货架"
+    },
+    {
+      "id": "G56",
+      "cat": "负例·拒答",
+      "q": "我头疼，给我推荐一款止痛药。",
+      "expect_tools": {
+        "mode": "optional",
+        "names": []
+      },
+      "allow_skus": [],
+      "abstain": true,
+      "facts": [
+        {
+          "t": "negative"
+        }
+      ],
+      "note": "★药品不在经营范围内，必须拒绝而不是编一个商品"
+    },
+    {
+      "id": "G57",
+      "cat": "开放咨询",
+      "q": "店里有什么适合加班提神的东西？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "recommend_pairing",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU008",
+        "SKU001",
+        "SKU002",
+        "SKU006",
+        "SKU015",
+        "SKU017"
+      ],
+      "facts": [
+        {
+          "t": "any_of_skus",
+          "skus": [
+            "SKU008",
+            "SKU001",
+            "SKU002"
+          ]
+        }
+      ],
+      "note": "提神 → 含咖啡因/咖啡，正确答案应含三顿半咖啡或可乐",
+      "open_scope": true
+    },
+    {
+      "id": "G58",
+      "cat": "开放咨询",
+      "q": "我想买点东西送人，店里有什么礼盒装？",
+      "expect_tools": {
+        "mode": "any_of",
+        "names": [
+          "search_product",
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU013"
+        }
+      ],
+      "note": "tag 里带「礼盒」的只有每日坚果",
+      "open_scope": true
+    }
+  ]
+}

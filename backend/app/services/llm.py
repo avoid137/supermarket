@@ -189,6 +189,9 @@ async def chat(
     return {
         "content": strip_dsml_text(message.get("content") or ""),
         "tool_calls": message.get("tool_calls") or [],
+        # 用量透传：评测集要算「单次导购成本」，没有它就只能估。
+        # 部分兼容网关不返回 usage，缺失时给空字典而不是报错。
+        "usage": data.get("usage") or {},
     }
 
 

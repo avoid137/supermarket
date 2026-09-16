@@ -135,7 +135,15 @@ supermarket/
 │   │       ├── pricing.py      # 促销、组合价、满减计算与折扣分摊
 │   │       ├── audit.py        # 审计追溯：抓拍存档 + 不可变快照 + 自动清理
 │   │       └── store.py        # 会话存储（生产环境替换为 Redis）
-│   └── tests/              # 8 个测试脚本，见「验证」章节
+│   ├── data/               # SQLite 库与审计抓拍图（运行态，不入库）
+│   ├── eval/               # 导购效果评测集 + 三方案消融，见「十二、测试与评测」
+│   │   ├── cases.json                 # 58 条标注用例
+│   │   ├── catalog_snapshot.json      # 商品主数据快照（评测真值来源）
+│   │   ├── run_eval.py                # 执行器：只跑不判，落盘 raw_*.jsonl
+│   │   ├── score_eval.py              # 打分器：只读不跑，产出指标与明细
+│   │   └── results/                   # 指标、报告、逐题原始记录
+│   ├── tests/              # 14 个测试脚本（12 个离线自跑 + 2 个需服务）
+│   └── training/           # YOLO 微调工作区（数据集与 *.pt 权重不入库）
 ├── frontend/
 │   └── src/
 │       ├── api/            # 接口封装（含 SSE 流式读取）
@@ -790,7 +798,19 @@ _root_logger.setLevel(logging.INFO)
 
 ---
 
-## 十二、验证
+## 十二、测试与评测
+
+测试分两层，回答的是两个不同的问题：
+
+| 层 | 位置 | 回答的问题 | 什么时候跑 |
+| --- | --- | --- | --- |
+| **回归测试** | `backend/tests/` | 这次改动有没有弄坏已有功能 | 每次改代码 |
+| **效果评测** | `backend/eval/` | 导购答得准不准、有没有在编 | 改 prompt / 检索 / 约束前后 |
+
+两者互补，不能互相替代。回归测试只验证**已有行为没坏**，所以它永远发现不了
+「某个工具从上线起就没生效过」这类问题——只有效果评测能发现，本项目就靠它挖出两个长期缺陷。
+
+### 1. 回归测试
 
 所有后端测试都**不需要 pytest**，直接 `python tests/xxx.py` 即可运行。
 
@@ -801,10 +821,26 @@ _root_logger.setLevel(logging.INFO)
 | `tests/stock_test.py` | 否 | 库存扣减、售罄拦截、重复支付幂等 |
 | `tests/vision_accuracy_test.py` | 否 | 给识别层喂各种模型输出，验证闭卷匹配/未知 SKU 丢弃/校准/仲裁（不耗 token） |
 | `tests/cascade_test.py` | 否 | 多帧投票聚合、级联框坐标传递、误检裁剪拒判（全 mock） |
+| `tests/test_cascade_instances.py` | 否 | 按框实例聚合：同帧两包不合并、不同规格不合并、多帧不重复计数 |
+| `tests/test_ruler_40g_fix.py` | 否 | 单候选硬纠偏：OCR 净含量 + 尺子实测长度把 40g / 70g 分对 |
+| `tests/test_size_ranking_sku_fix.py` | 否 | 尺寸排序/排除法真的重设 `candidates[0].sku_id`；Phantom 小框降级为 review |
+| `tests/test_weight_resolve.py` | 否 | 相似组重量终裁：总重残差枚举规格组合，唯一容差命中才切换 SKU |
+| `tests/test_confirm_guard.py` | 否 | 未解决 review（含空候选「未识别品类」）在 confirm 阶段强制拦截，且不误拦已人工指认项 |
 | `tests/test_audit_auto_purge.py` | 否 | 自动清理三阶段：启动即清 / interval 续清 / 干净退出 |
 | `tests/test_prompts_parity.py` | 否 | 提示词 YAML 与原始源码逐字比对，搬运错一字即红（抽离防回归） |
 | `tests/smoke_test.py` | **是** | 端到端：S1 顺畅路径、S2 歧义追问、S3 转人工与称重报警、S4 新商品、导购流式 |
 | `tests/vision_live_probe.py` | **是** + 有效 Key | 用合成图片走通真实视觉模型（耗少量 token） |
+
+前 12 个离线脚本一轮跑完：
+
+```bash
+cd backend
+for f in db_test new_sku_test stock_test vision_accuracy_test cascade_test \
+         test_cascade_instances test_confirm_guard test_audit_auto_purge \
+         test_prompts_parity test_ruler_40g_fix test_size_ranking_sku_fix test_weight_resolve; do
+  python "tests/$f.py" || echo "FAIL $f"
+done
+```
 
 提示词结构自检（不属于 pytest，直接跑）：
 
@@ -813,19 +849,83 @@ cd backend
 python -m app.cli.check_prompts        # 校验 4 个 YAML 结构完整、工具名齐全
 ```
 
-```bash
-cd backend
-python tests/db_test.py                 # 数据层
-python tests/smoke_test.py              # 接口冒烟（需先启动后端）
-python tests/test_audit_auto_purge.py   # 审计自动清理
-python tests/test_prompts_parity.py     # 提示词抽离防回归
-```
-
 前端类型检查与构建：
 
 ```bash
 cd frontend && npm run build
 ```
+
+### 2. 效果评测：58 条标注用例 + 三方案消融
+
+回归测试过了只能说明「没坏」，说明不了「答得准」。`backend/eval/` 回答后者。
+
+同一套 58 条用例跑三种配置，**A→B 只加工具，B→C 只加约束**，差值即各自贡献：
+
+| 配置 | 注册工具 | system prompt | 衡量 |
+| --- | --- | --- | --- |
+| **A** 纯 LLM 直答 | ❌ 不注册 | 只给店员人格，不给任何规则 | 不接店内数据时，模型会编多离谱 |
+| **B** 仅工具调用（无约束） | ✅ 7 个（6 领域 + 1 兜底 SQL） | 只给店员人格，不给任何规则 | 光把工具挂上去够不够 |
+| **C** 工具 + 边界约束（**线上现状**） | ✅ 7 个（6 领域 + 1 兜底 SQL） | 完整提示词 + 第二轮硬约束 | 「给大模型划边界」的增量收益 |
+
+实测（58 条，temperature=0.3）：
+
+| 配置 | 事实正确率 | 幻觉率 | 库外商品率 | 越界率 | 协议标记泄漏 | 工具命中率 | 平均延迟 | prompt / completion tok |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A 纯 LLM 直答 | 37.9% | 5.2% | 19.0% | 0.0% | 0.0% | — | 2,797 ms | 95 / 371 |
+| B 仅工具（无约束） | 94.8% | 0.0% | 1.7% | 0.0% | 5.2% | 100% | 2,302 ms | 1,409 / 217 |
+| **C 工具 + 边界约束** | **98.3%** | **0.0%** | **0.0%** | **0.0%** | **0.0%** | **98.2%** | 2,367 ms | 2,054 / 233 |
+
+这张表怎么读：
+
+- **A→B（事实 37.9%→94.8%、库外商品 19.0%→1.7%）**：把店内数据接进来是最大的一跳。
+  约束再强也救不了「模型手里根本没有店内数据」，它只能靠记忆编。
+- **B→C（事实 94.8%→98.3%、协议标记泄漏 5.2%→0%）**：约束的价值不是「让它知道」，
+  而是「不让它跑偏」。C 组第二轮**不传 tools 参数**，是从协议层面禁止再调工具，
+  而不是在提示词里求它别调；`<|DSML|tool_calls|>` 这类协议标记泄漏随之归零。
+- **成本结构**：C 组 prompt 是 A 组的 21 倍（2,054 vs 95 tok），换来约 60 个百分点的正确率。
+  这套系统的成本贵在 prompt，不在生成。
+
+#### 评测集挖出的两个长期缺陷
+
+第一轮跑就红了两个此前一直没人发现的 bug——不是评测写错了，是代码真错：
+
+| 缺陷 | 现象 | 根因 | 修复后 |
+| --- | --- | --- | --- |
+| `check_stock` 工具**从上线起没生效过** | 顾客问「还有货吗」，工具恒返回「请提供要查询的 sku_id 列表」 | 对模型声明的参数是 `keyword`，`run_tool` 却只读 `sku_ids`，声明与实现错位 | 库存题 1/5 → **5/5** |
+| 「既无糖又要是茶」检索不到 | 唯一的无糖茶（东方树叶）0 命中 | `HEALTH_TAGS` 把「无糖」映射为 `0糖/无糖`，商品标签写的是「无糖茶」，严格相等判不中；且「茶」不在风味词表 | 互相包含匹配 + 补词表 |
+
+第一个尤其典型：日常对话里 `search_product` 顺带返回的库存字段把它兜住了，
+**人工试用完全看不出来**；只有拿 58 条题一条条过，5 道库存题全挂才暴露。
+套用同一套判据回算，C 组 91.4% → 98.3%，B 组 87.9% → 94.8%。
+
+#### 怎么跑
+
+```bash
+cd backend
+
+# 1) 先把数据库重置回种子态（评测会读库存与促销，数据跑脏了就不可比）
+python -m app.db.seed --force
+
+# 2) 重建商品快照（改了 products.py 或重置过数据库才需要）
+python eval/refresh_snapshot.py
+
+# 3) 跑三组（58 题 × 3 组，约 2 分钟 / 174 次调用）
+python eval/run_eval.py --arm all
+
+# 4) 打分（不调模型；判据改了直接重跑这一步，不烧额度）
+python eval/score_eval.py
+```
+
+产物在 `eval/results/`：`raw_{pure,tools,guard}.jsonl`（逐题原始记录，含工具调用轨迹与 token 用量）、
+`metrics.json`（机器可读指标）、`report.md`（总表 + 分类别 + 全部问题用例明细）。
+
+`run` 与 `score` 分离是刻意的：**判据一定会改**，分离后改判据不用重新烧 API 额度。
+
+用例构成、指标定义、判据修正过程与 5 条已知局限见 [`backend/eval/README.md`](backend/eval/README.md)。
+
+> 诚实边界：58 条是「够发现问题、不够下结论」的规模（单条 = 1.7pp）；
+> 幻觉率是**下限**（只统计能被自动校验的断言）；用例由作者本人编写，存在
+> 「按自己系统的能力设计题目」的偏差，所以它只能算内部评测，不能算基准。
 
 ---
 

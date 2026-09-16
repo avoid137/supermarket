@@ -188,16 +188,21 @@ def run_tool(name: str, arguments: dict[str, Any]) -> tuple[str, list[Citation]]
                 lines.append(f"- {product.name}（¥{product.price}）：{promo.desc}")
         return "\n".join(lines), []
 
-    # check_stock 按 sku_ids 精确查，不依赖 keyword 模糊搜索：
-    # 顾客问「SKU001 还有货吗」时，模糊搜可能命中同名不同规格的多个 SKU，
-    # 但 check_stock 的语义是「这几件具体商品还有没有」，必须按 id 精确取。
+    # check_stock 的入参以 sku_ids 为准（精确取货，避开同名不同规格）；但工具对模型
+    # 暴露的参数是 keyword（见 app/prompts/guide.yaml），模型只会传关键词。
+    # 早期实现只读 sku_ids，导致声明与实现错位、库存工具对模型永久不可用——
+    # 顾客问「还有货吗」时工具恒返回「请提供 sku_id 列表」。2026-09-16 的 58 条
+    # 评测集把它暴露出来（5 道库存题全挂），故补上 keyword → 商品的解析分支：
+    # 两条路都保留，显式传 id 仍走精确路径。
     if name == "check_stock":
         sku_ids = arguments.get("sku_ids") or []
-        if not isinstance(sku_ids, list) or not sku_ids:
-            return "请提供要查询的 sku_id 列表。", []
-        products = product_repo.list_products_by_ids([str(s) for s in sku_ids])
+        if isinstance(sku_ids, list) and sku_ids:
+            products = product_repo.list_products_by_ids([str(s) for s in sku_ids])
+        else:
+            products = product_repo.search_products(keyword, top_k=3)
         if not products:
-            return "未找到这些商品，请确认 sku_id 是否正确。", []
+            target = keyword or "、".join(str(s) for s in sku_ids) or "该商品"
+            return f"未找到「{target}」，请确认商品名或 sku_id 是否正确。", []
         lines = []
         citations = []
         for p in products:

@@ -52,6 +52,10 @@ HEALTH_TAGS: dict[str, list[str]] = {
 TASTE_WORDS = [
     "原味", "黄瓜", "葡萄", "白桃", "桃子", "薄荷", "麻辣", "香辣",
     "香草", "巧克力", "花生", "坚果", "乌龙", "柠檬", "鸡蛋",
+    # 「茶」是品类俗称而非口味，但作用一样：查询里出现「茶」时，
+    # 只有名字/标签带茶的商品该被顶上来。缺了它，「既无糖又是茶的饮料」
+    # 会因为「茶」不在任何属性词表里而检索不到东方树叶（2026-09-16 评测集暴露）。
+    "茶",
 ]
 
 NEGATIVE_WORDS = ["不含", "不要", "没有", "避免", "过敏"]
@@ -214,7 +218,9 @@ def _health_score(product: Product, health: list[str]) -> float:
     if not health:
         return 0.0
     tags = set(product.tags)
-    hits = sum(1 for h in health if h in tags)
+    # 互相包含而非严格相等：顾客说「无糖」，商品标签写的是「无糖茶」，
+    # 严格相等会判 0 命中，把唯一一款无糖茶判成「不无糖」。
+    hits = sum(1 for h in health if any(h in t or t in h for t in tags))
     if hits:
         return 26.0 * hits
     return -6.0
