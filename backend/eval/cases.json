@@ -1512,6 +1512,244 @@
       ],
       "note": "tag 里带「礼盒」的只有每日坚果",
       "open_scope": true
+    },
+    {
+      "id": "G59",
+      "cat": "聚合计算",
+      "q": "零食里最贵的是哪一款？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU027",
+        "SKU029",
+        "SKU015",
+        "SKU018",
+        "SKU014",
+        "SKU009",
+        "SKU010",
+        "SKU025",
+        "SKU011",
+        "SKU017",
+        "SKU012",
+        "SKU016",
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU013"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） MAX"
+    },
+    {
+      "id": "G60",
+      "cat": "聚合计算",
+      "q": "饮料里最贵的是哪个？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU005",
+        "SKU001",
+        "SKU002",
+        "SKU028",
+        "SKU006",
+        "SKU003",
+        "SKU004",
+        "SKU026",
+        "SKU007",
+        "SKU008"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU008"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） MAX"
+    },
+    {
+      "id": "G61",
+      "cat": "聚合计算",
+      "q": "你们店里的饮料一共有多少款？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU005",
+        "SKU001",
+        "SKU002",
+        "SKU028",
+        "SKU006",
+        "SKU003",
+        "SKU004",
+        "SKU026",
+        "SKU007",
+        "SKU008"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "10"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） COUNT"
+    },
+    {
+      "id": "G62",
+      "cat": "聚合计算",
+      "q": "日用类有几款商品？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU024",
+        "SKU019",
+        "SKU020",
+        "SKU022",
+        "SKU021",
+        "SKU023"
+      ],
+      "facts": [
+        {
+          "t": "regex",
+          "pattern": "6"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） COUNT（已用 DB 实际分类「日用」措辞）"
+    },
+    {
+      "id": "G63",
+      "cat": "聚合计算",
+      "q": "饮料里第二贵的是哪个？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU005",
+        "SKU001",
+        "SKU002",
+        "SKU028",
+        "SKU006",
+        "SKU003",
+        "SKU004",
+        "SKU026",
+        "SKU007",
+        "SKU008"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU007"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） 排名第（排序）"
+    },
+    {
+      "id": "G64",
+      "cat": "聚合计算",
+      "q": "把零食按价格从高到低排，最贵的 3 款是哪些？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU027",
+        "SKU029",
+        "SKU015",
+        "SKU018",
+        "SKU014",
+        "SKU009",
+        "SKU010",
+        "SKU025",
+        "SKU011",
+        "SKU017",
+        "SKU012",
+        "SKU016",
+        "SKU013"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU013"
+        },
+        {
+          "t": "name",
+          "sku": "SKU016"
+        },
+        {
+          "t": "name",
+          "sku": "SKU012"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） 排序 Top-3（需 3 个 name fact 全中）"
+    },
+    {
+      "id": "G65",
+      "cat": "聚合计算",
+      "q": "可口可乐和农夫山泉，哪个更贵？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU001",
+        "SKU005"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU001"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） 跨商品比价"
+    },
+    {
+      "id": "G66",
+      "cat": "聚合计算",
+      "q": "日用类商品里，最便宜的是哪一个？",
+      "expect_tools": {
+        "mode": "all_of",
+        "names": [
+          "query_product_database"
+        ]
+      },
+      "allow_skus": [
+        "SKU024",
+        "SKU019",
+        "SKU020",
+        "SKU022",
+        "SKU021",
+        "SKU023"
+      ],
+      "facts": [
+        {
+          "t": "name",
+          "sku": "SKU024"
+        }
+      ],
+      "note": "★聚合题（预设工具覆盖不了，正解必须走 SQL 兜底 query_product_database；search_product 一次只返 Top-3 且无法聚合/排序，硬凑必答错） MIN（已用 DB 实际分类「日用」措辞，隔离「日用品」口语同义映射干扰）"
     }
   ]
 }

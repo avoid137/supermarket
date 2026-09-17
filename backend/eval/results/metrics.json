@@ -1,22 +1,22 @@
 {
   "pure": {
     "arm": "pure",
-    "n": 58,
+    "n": 66,
     "errors": 0,
-    "fact_accuracy": 0.3793,
-    "hallucination_rate": 0.1034,
-    "out_of_catalog_rate": 0.2069,
+    "fact_accuracy": 0.3485,
+    "hallucination_rate": 0.0758,
+    "out_of_catalog_rate": 0.1515,
     "dsml_leak_rate": 0.0,
-    "off_target_rate": 0.0172,
+    "off_target_rate": 0.0,
     "tool_hit_rate": null,
-    "avg_latency_ms": 2601,
+    "avg_latency_ms": 3895,
     "avg_prompt_tokens": 95,
-    "avg_completion_tokens": 355,
+    "avg_completion_tokens": 385,
     "by_category": {
       "价格": {
-        "fact_accuracy": 0.25,
+        "fact_accuracy": 0.375,
         "n": 8,
-        "hallucination_rate": 0.5
+        "hallucination_rate": 0.25
       },
       "促销": {
         "fact_accuracy": 0.25,
@@ -31,12 +31,12 @@
       "多轮对话": {
         "fact_accuracy": 0.667,
         "n": 3,
-        "hallucination_rate": 0.0
+        "hallucination_rate": 0.333
       },
       "库存": {
-        "fact_accuracy": 0.6,
+        "fact_accuracy": 0.4,
         "n": 5,
-        "hallucination_rate": 0.2
+        "hallucination_rate": 0.0
       },
       "开放咨询": {
         "fact_accuracy": 0.0,
@@ -48,25 +48,30 @@
         "n": 3,
         "hallucination_rate": 0.0
       },
+      "聚合计算": {
+        "fact_accuracy": 0.125,
+        "n": 8,
+        "hallucination_rate": 0.125
+      },
       "营养成分": {
-        "fact_accuracy": 0.4,
+        "fact_accuracy": 0.5,
         "n": 10,
         "hallucination_rate": 0.0
       },
       "语义检索": {
         "fact_accuracy": 0.25,
         "n": 4,
-        "hallucination_rate": 0.0
+        "hallucination_rate": 0.25
       },
       "负例·拒答": {
-        "fact_accuracy": 0.75,
+        "fact_accuracy": 0.5,
         "n": 4,
         "hallucination_rate": 0.0
       },
       "货架位置": {
         "fact_accuracy": 0.0,
         "n": 6,
-        "hallucination_rate": 0.167
+        "hallucination_rate": 0.0
       },
       "过敏原": {
         "fact_accuracy": 0.833,
@@ -77,20 +82,20 @@
   },
   "tools": {
     "arm": "tools",
-    "n": 58,
+    "n": 66,
     "errors": 0,
-    "fact_accuracy": 0.931,
-    "hallucination_rate": 0.0345,
-    "out_of_catalog_rate": 0.0345,
-    "dsml_leak_rate": 0.0517,
-    "off_target_rate": 0.0172,
+    "fact_accuracy": 0.9242,
+    "hallucination_rate": 0.0,
+    "out_of_catalog_rate": 0.0303,
+    "dsml_leak_rate": 0.0758,
+    "off_target_rate": 0.0152,
     "tool_hit_rate": 1.0,
-    "avg_latency_ms": 2341,
-    "avg_prompt_tokens": 1443,
-    "avg_completion_tokens": 218,
+    "avg_latency_ms": 4056,
+    "avg_prompt_tokens": 1461,
+    "avg_completion_tokens": 244,
     "by_category": {
       "价格": {
-        "fact_accuracy": 0.875,
+        "fact_accuracy": 1.0,
         "n": 8,
         "hallucination_rate": 0.0
       },
@@ -100,7 +105,7 @@
         "hallucination_rate": 0.0
       },
       "多条件筛选": {
-        "fact_accuracy": 1.0,
+        "fact_accuracy": 0.667,
         "n": 3,
         "hallucination_rate": 0.0
       },
@@ -110,12 +115,12 @@
         "hallucination_rate": 0.0
       },
       "库存": {
-        "fact_accuracy": 0.8,
+        "fact_accuracy": 1.0,
         "n": 5,
-        "hallucination_rate": 0.2
+        "hallucination_rate": 0.0
       },
       "开放咨询": {
-        "fact_accuracy": 1.0,
+        "fact_accuracy": 0.5,
         "n": 2,
         "hallucination_rate": 0.0
       },
@@ -124,18 +129,23 @@
         "n": 3,
         "hallucination_rate": 0.0
       },
+      "聚合计算": {
+        "fact_accuracy": 0.875,
+        "n": 8,
+        "hallucination_rate": 0.0
+      },
       "营养成分": {
         "fact_accuracy": 1.0,
         "n": 10,
         "hallucination_rate": 0.0
       },
       "语义检索": {
-        "fact_accuracy": 0.75,
+        "fact_accuracy": 0.5,
         "n": 4,
         "hallucination_rate": 0.0
       },
       "负例·拒答": {
-        "fact_accuracy": 0.75,
+        "fact_accuracy": 1.0,
         "n": 4,
         "hallucination_rate": 0.0
       },
@@ -147,23 +157,23 @@
       "过敏原": {
         "fact_accuracy": 1.0,
         "n": 6,
-        "hallucination_rate": 0.167
+        "hallucination_rate": 0.0
       }
     }
   },
   "guard": {
     "arm": "guard",
-    "n": 58,
+    "n": 66,
     "errors": 0,
-    "fact_accuracy": 0.931,
-    "hallucination_rate": 0.0862,
+    "fact_accuracy": 0.9394,
+    "hallucination_rate": 0.0455,
     "out_of_catalog_rate": 0.0,
     "dsml_leak_rate": 0.0,
-    "off_target_rate": 0.0172,
+    "off_target_rate": 0.0303,
     "tool_hit_rate": 1.0,
-    "avg_latency_ms": 2421,
-    "avg_prompt_tokens": 2419,
-    "avg_completion_tokens": 246,
+    "avg_latency_ms": 4696,
+    "avg_prompt_tokens": 2434,
+    "avg_completion_tokens": 244,
     "by_category": {
       "价格": {
         "fact_accuracy": 1.0,
@@ -173,7 +183,7 @@
       "促销": {
         "fact_accuracy": 1.0,
         "n": 4,
-        "hallucination_rate": 0.25
+        "hallucination_rate": 0.0
       },
       "多条件筛选": {
         "fact_accuracy": 0.667,
@@ -188,7 +198,7 @@
       "库存": {
         "fact_accuracy": 0.8,
         "n": 5,
-        "hallucination_rate": 0.8
+        "hallucination_rate": 0.6
       },
       "开放咨询": {
         "fact_accuracy": 1.0,
@@ -198,6 +208,11 @@
       "搭配推荐": {
         "fact_accuracy": 1.0,
         "n": 3,
+        "hallucination_rate": 0.0
+      },
+      "聚合计算": {
+        "fact_accuracy": 1.0,
+        "n": 8,
         "hallucination_rate": 0.0
       },
       "营养成分": {
